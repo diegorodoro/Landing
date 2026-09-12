@@ -1,0 +1,71 @@
+---
+import { servicios } from "../config";
+---
+
+<section id="servicios" class="border-t border-ink-100 py-24 sm:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="max-w-2xl" data-reveal>
+      <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Servicios</p>
+      <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        Cuatro pasos, del diagnóstico a que tu equipo lo opere solo
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-ink-500">
+        Empezamos pequeño y acotado a propósito. Primero demostramos valor con un piloto y solo
+        después construimos la solución completa.
+      </p>
+    </div>
+
+    <ul class="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {
+        servicios.map((servicio, i) => (
+          <li
+            data-reveal
+            style={`--d: ${i * 80}ms`}
+            class:list={[
+              "group relative flex flex-col rounded-2xl border p-7 transition-all duration-300 hover:-translate-y-1",
+              servicio.destacado
+                ? "border-brand-500/30 bg-brand-50/50 hover:border-brand-500/60 hover:shadow-xl hover:shadow-brand-500/10"
+                : "border-ink-100 hover:border-ink-300 hover:shadow-xl hover:shadow-ink-900/5",
+            ]}
+          >
+            {servicio.destacado && (
+              <span class="absolute -top-3 left-7 rounded-full bg-brand-500 px-3 py-1 text-xs font-medium text-white">
+                Empieza aquí
+              </span>
+            )}
+
+            <span
+              class="text-sm font-medium tabular-nums text-ink-300"
+              aria-hidden="true"
+            >
+              {String(i + 1).padStart(2, "0")}
+            </span>
+
+            <h3 class="mt-3 text-xl font-semibold tracking-tight">{servicio.nombre}</h3>
+            <p class="mt-3 flex-1 leading-relaxed text-ink-500">{servicio.resumen}</p>
+
+            <p class="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm text-ink-700 ring-1 ring-ink-100">
+              <svg
+                class="h-3.5 w-3.5 text-brand-500"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <circle cx="8" cy="8" r="6.25" />
+                <path d="M8 4.5V8l2.5 1.5" stroke-linecap="round" />
+              </svg>
+              {servicio.duracion}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-8 text-sm text-ink-500" data-reveal>
+      El alcance y el precio de cada proyecto se cierran después del diagnóstico, cuando ya sabemos
+      qué necesitas.
+    </p>
+  </div>
+</section>

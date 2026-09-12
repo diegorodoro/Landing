@@ -1,0 +1,111 @@
+---
+import { hero, agenda } from "../config";
+import HeroVisual from "./HeroVisual.astro";
+const destinoCta = agenda.url || "#agenda";
+const externo = Boolean(agenda.url);
+---
+
+<section class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+  <!-- Fondo decorativo: manchas que respiran + rejilla tenue. -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div
+      class="aurora absolute -top-40 -left-32 h-[34rem] w-[34rem] rounded-full bg-brand-100 opacity-70 blur-3xl"
+    >
+    </div>
+    <div
+      class="aurora absolute -top-24 right-0 h-[30rem] w-[30rem] rounded-full bg-brand-50 opacity-80 blur-3xl"
+      style="animation-delay: -9s"
+    >
+    </div>
+    <div class="rejilla absolute inset-0 opacity-[0.35]"></div>
+    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white"></div>
+  </div>
+
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+      <!-- Columna de texto -->
+      <div>
+        <p
+          class="anim-in inline-flex items-center gap-2 rounded-full border border-ink-100 bg-white/60 px-4 py-1.5 text-sm text-ink-500 backdrop-blur"
+        >
+          <span class="relative flex h-2 w-2">
+            <span
+              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-75"
+            ></span>
+            <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span>
+          </span>
+          {hero.eyebrow}
+        </p>
+
+        <h1
+          class="anim-in mt-7 text-4xl font-semibold leading-[1.1] tracking-tight text-balance sm:text-5xl xl:text-6xl"
+          style="--d: 100ms"
+        >
+          {hero.titulo}
+          <span class="text-brand-500">{hero.tituloAcento}</span>
+        </h1>
+
+        <p class="anim-in mt-6 max-w-xl text-lg leading-relaxed text-ink-500" style="--d: 200ms">
+          {hero.bajada}
+        </p>
+
+        <div
+          class="anim-in mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+          style="--d: 300ms"
+        >
+          <a
+            href={destinoCta}
+            target={externo ? "_blank" : undefined}
+            rel={externo ? "noopener noreferrer" : undefined}
+            class="group inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-7 py-3.5 font-medium text-white shadow-lg shadow-brand-500/25 transition-all duration-200 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/30"
+          >
+            {agenda.cta}
+            <span
+              class="transition-transform duration-200 group-hover:translate-x-1"
+              aria-hidden="true">&rarr;</span
+            >
+          </a>
+          <a
+            href="#producto"
+            class="inline-flex items-center justify-center rounded-full border border-ink-100 bg-white/70 px-7 py-3.5 font-medium text-ink-700 backdrop-blur transition-colors hover:border-ink-300 hover:bg-ink-50"
+          >
+            Ver el producto
+          </a>
+        </div>
+
+        <!-- Cifras: cuentan hacia arriba al cargar (ver script al final). -->
+        <dl class="anim-in mt-14 grid grid-cols-3 gap-6" style="--d: 400ms">
+          {
+            hero.datos.map((dato) => (
+              <div class="border-l-2 border-brand-100 pl-4">
+                <dt class="sr-only">{dato.etiqueta}</dt>
+                <dd>
+                  <span class="block text-2xl font-semibold tracking-tight sm:text-3xl">
+                    {dato.valor}
+                  </span>
+                  <span class="mt-1 block text-sm leading-snug text-ink-500">{dato.etiqueta}</span>
+                </dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <!-- Columna del mockup -->
+      <div class="anim-in" style="--d: 350ms">
+        <HeroVisual />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Rejilla sutil de fondo, dibujada con gradientes: cero peticiones. */
+  .rejilla {
+    background-image:
+      linear-gradient(to right, var(--color-ink-100) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--color-ink-100) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+</style>

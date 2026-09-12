@@ -1,0 +1,238 @@
+---
+import { agendaSeccion, agenda, formulario, site } from "../config";
+---
+
+<section id="agenda" class="scroll-mt-24 bg-ink-900 py-24 text-white sm:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="grid gap-12 lg:grid-cols-2 lg:gap-16">
+      <!-- Columna izquierda: qué es y qué incluye -->
+      <div data-reveal>
+        <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Agenda</p>
+        <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          {agendaSeccion.titulo}
+        </h2>
+        <p class="mt-5 text-lg leading-relaxed text-ink-300">{agendaSeccion.bajada}</p>
+
+        <h3 class="mt-10 text-sm font-medium uppercase tracking-widest text-ink-300">
+          Qué te llevas de la sesión
+        </h3>
+        <ul class="mt-5 space-y-3.5">
+          {
+            agendaSeccion.incluye.map((punto) => (
+              <li class="flex gap-3 leading-relaxed text-ink-100">
+                <svg
+                  class="mt-1 h-5 w-5 shrink-0 text-brand-500"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  aria-hidden="true"
+                >
+                  <path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span>{punto}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        {
+          agenda.url && (
+            <a
+              href={agenda.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-10 inline-flex items-center gap-2 rounded-full bg-brand-500 px-7 py-3.5 font-medium text-white transition-colors hover:bg-brand-600"
+            >
+              Ver horarios disponibles
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          )
+        }
+
+        <p class="mt-10 text-sm text-ink-300">
+          ¿Prefieres escribir?{" "}
+          <a href={`mailto:${site.email}`} class="text-white underline underline-offset-4">
+            {site.email}
+          </a>
+        </p>
+      </div>
+
+      <!-- Columna derecha: formulario -->
+      <div
+        class="rounded-2xl bg-white p-7 text-ink-900 shadow-2xl sm:p-9"
+        data-reveal
+        style="--d: 140ms"
+      >
+        <form id="form-agenda" class="space-y-5" novalidate>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="nombre" class="block text-sm font-medium">Nombre y apellido</label>
+              <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                required
+                autocomplete="name"
+                class="mt-2 w-full rounded-lg border border-ink-100 px-3.5 py-2.5 transition-colors placeholder:text-ink-300 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label for="empresa" class="block text-sm font-medium">Empresa</label>
+              <input
+                id="empresa"
+                name="empresa"
+                type="text"
+                required
+                autocomplete="organization"
+                class="mt-2 w-full rounded-lg border border-ink-100 px-3.5 py-2.5 transition-colors placeholder:text-ink-300 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label for="email" class="block text-sm font-medium">Correo</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                autocomplete="email"
+                class="mt-2 w-full rounded-lg border border-ink-100 px-3.5 py-2.5 transition-colors placeholder:text-ink-300 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label for="telefono" class="block text-sm font-medium">
+                Teléfono <span class="font-normal text-ink-300">(opcional)</span>
+              </label>
+              <input
+                id="telefono"
+                name="telefono"
+                type="tel"
+                autocomplete="tel"
+                class="mt-2 w-full rounded-lg border border-ink-100 px-3.5 py-2.5 transition-colors placeholder:text-ink-300 focus:border-brand-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label for="tamano" class="block text-sm font-medium">Tamaño de la empresa</label>
+            <select
+              id="tamano"
+              name="tamano"
+              required
+              class="mt-2 w-full rounded-lg border border-ink-100 bg-white px-3.5 py-2.5 transition-colors focus:border-brand-500 focus:outline-none"
+            >
+              <option value="">Selecciona una opción</option>
+              {agendaSeccion.tamanos.map((t) => <option value={t}>{t}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label for="reto" class="block text-sm font-medium">
+              ¿Qué proceso les quita más tiempo hoy?
+            </label>
+            <textarea
+              id="reto"
+              name="reto"
+              rows="4"
+              required
+              placeholder="Ej. cotizamos a mano en Excel y tardamos dos días en responder a un cliente."
+              class="mt-2 w-full resize-y rounded-lg border border-ink-100 px-3.5 py-2.5 transition-colors placeholder:text-ink-300 focus:border-brand-500 focus:outline-none"
+            ></textarea>
+          </div>
+
+          <!-- Trampa anti-spam: los bots la rellenan, las personas no la ven. -->
+          <div class="absolute h-0 w-0 overflow-hidden" aria-hidden="true">
+            <label for="sitio-web">No rellenar</label>
+            <input id="sitio-web" name="sitio-web" type="text" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full rounded-full bg-brand-500 px-7 py-3.5 font-medium text-white transition-all duration-200 hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <span data-texto-boton>Solicitar diagnóstico</span>
+          </button>
+
+          <p
+            id="form-estado"
+            role="status"
+            aria-live="polite"
+            class="hidden rounded-lg px-4 py-3 text-sm"
+          >
+          </p>
+
+          <p class="text-center text-xs leading-relaxed text-ink-500">
+            Tus datos se usan solo para contactarte. No los compartimos con nadie.
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ endpoint: formulario.endpoint }}>
+  const form = document.querySelector("#form-agenda");
+  const estado = document.querySelector("#form-estado");
+  const textoBoton = document.querySelector("[data-texto-boton]");
+
+  if (form && estado && textoBoton) {
+    const boton = form.querySelector('button[type="submit"]');
+
+    const mostrar = (mensaje, tipo) => {
+      estado.textContent = mensaje;
+      estado.className =
+        tipo === "ok"
+          ? "rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800"
+          : "rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800";
+    };
+
+    form.addEventListener("submit", async (evento) => {
+      evento.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const datos = new FormData(form);
+
+      // Si el campo trampa viene lleno, es un bot: fingimos éxito y no enviamos.
+      if (datos.get("sitio-web")) {
+        mostrar("Gracias, te contactamos pronto.", "ok");
+        return;
+      }
+
+      if (!endpoint) {
+        mostrar(
+          "El formulario todavía no está conectado. Configura formulario.endpoint en src/config.ts.",
+          "error",
+        );
+        return;
+      }
+
+      boton.disabled = true;
+      textoBoton.textContent = "Enviando...";
+
+      try {
+        const respuesta = await fetch(endpoint, {
+          method: "POST",
+          body: datos,
+          headers: { Accept: "application/json" },
+        });
+
+        if (!respuesta.ok) throw new Error(String(respuesta.status));
+
+        form.reset();
+        mostrar("Recibido. Te contactamos en menos de 24 horas hábiles.", "ok");
+      } catch {
+        mostrar("No se pudo enviar. Inténtalo de nuevo o escríbenos por correo.", "error");
+      } finally {
+        boton.disabled = false;
+        textoBoton.textContent = "Solicitar diagnóstico";
+      }
+    });
+  }
+</script>

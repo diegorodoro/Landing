@@ -1,0 +1,68 @@
+---
+import { site, nav } from "../config";
+const anio = new Date().getFullYear();
+---
+
+<footer class="border-t border-ink-100 py-14">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
+      <div>
+        <p class="text-lg font-semibold tracking-tight">
+          Solotu<span class="text-brand-500">.IA</span>
+        </p>
+        <p class="mt-2 max-w-xs text-sm leading-relaxed text-ink-500">
+          {site.claim} que desarrolla soluciones empresariales personalizadas.
+        </p>
+        <p class="mt-4 text-sm text-ink-500">{site.zonas}</p>
+      </div>
+
+      <nav aria-label="Pie de página" class="flex flex-col gap-3">
+        {
+          nav.map((item) => (
+            <a href={item.href} class="text-sm text-ink-500 transition-colors hover:text-ink-900">
+              {item.texto}
+            </a>
+          ))
+        }
+        <a href="#agenda" class="text-sm text-ink-500 transition-colors hover:text-ink-900">
+          Agenda
+        </a>
+      </nav>
+
+      <div class="flex flex-col gap-3">
+        <a
+          href={`mailto:${site.email}`}
+          class="text-sm text-ink-500 transition-colors hover:text-ink-900"
+        >
+          {site.email}
+        </a>
+        {
+          site.telefono && (
+            <a
+              href={`tel:${site.telefono.replace(/\s/g, "")}`}
+              class="text-sm text-ink-500 transition-colors hover:text-ink-900"
+            >
+              {site.telefono}
+            </a>
+          )
+        }
+        {
+          site.linkedin && (
+            <a
+              href={site.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm text-ink-500 transition-colors hover:text-ink-900"
+            >
+              LinkedIn
+            </a>
+          )
+        }
+      </div>
+    </div>
+
+    <p class="mt-12 border-t border-ink-100 pt-8 text-sm text-ink-300">
+      &copy; {anio} {site.nombre}. Todos los derechos reservados.
+    </p>
+  </div>
+</footer>

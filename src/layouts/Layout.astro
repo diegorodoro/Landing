@@ -1,0 +1,101 @@
+---
+import "../styles/global.css";
+import { site } from "../config";
+
+interface Props {
+  titulo?: string;
+  descripcion?: string;
+}
+
+const { titulo, descripcion = site.descripcion } = Astro.props;
+const tituloFinal = titulo ? `${titulo} · ${site.nombre}` : `${site.nombre} — ${site.claim}`;
+const canonical = new URL(Astro.url.pathname, site.url).href;
+---
+
+<html lang="es-MX">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Precarga solo la fuente latina: es la que pinta el <h1> del hero (LCP). -->
+    <link
+      rel="preload"
+      href="/fonts/inter-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="canonical" href={canonical} />
+
+    <title>{tituloFinal}</title>
+    <meta name="description" content={descripcion} />
+
+    <!-- Open Graph / redes sociales -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_MX" />
+    <meta property="og:site_name" content={site.nombre} />
+    <meta property="og:title" content={tituloFinal} />
+    <meta property="og:description" content={descripcion} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- TODO: crear /public/og.jpg de 1200x630 y descomentar estas dos líneas
+    <meta property="og:image" content={new URL("/og.jpg", site.url).href} />
+    <meta name="twitter:image" content={new URL("/og.jpg", site.url).href} />
+    -->
+
+    <!-- Datos estructurados: ayuda a Google a entender qué es esta empresa -->
+    <script
+      is:inline
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        name: site.nombre,
+        description: site.descripcion,
+        url: site.url,
+        email: site.email,
+        areaServed: "MX",
+        address: {
+          "@type": "PostalAddress",
+          addressCountry: "MX",
+          addressRegion: "Puebla",
+        },
+      })}
+    />
+  </head>
+
+  <body>
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white"
+    >
+      Saltar al contenido
+    </a>
+    <slot />
+
+    <script>
+      // Anima los elementos con [data-reveal] cuando entran en pantalla.
+      // Se desconecta tras animar cada uno: no queda nada escuchando scroll.
+      const objetivos = document.querySelectorAll<HTMLElement>("[data-reveal]");
+      const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (sinMovimiento || !("IntersectionObserver" in window)) {
+        objetivos.forEach((el) => el.classList.add("is-visible"));
+      } else {
+        const observador = new IntersectionObserver(
+          (entradas) => {
+            for (const entrada of entradas) {
+              if (!entrada.isIntersecting) continue;
+              entrada.target.classList.add("is-visible");
+              observador.unobserve(entrada.target);
+            }
+          },
+          { threshold: 0.15, rootMargin: "0px 0px -60px 0px" },
+        );
+        objetivos.forEach((el) => observador.observe(el));
+      }
+    </script>
+  </body>
+</html>

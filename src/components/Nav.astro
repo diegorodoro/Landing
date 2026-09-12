@@ -1,0 +1,58 @@
+---
+import { site, nav, agenda } from "../config";
+// Si hay URL de calendario, los botones abren el calendario.
+// Si no, bajan al formulario de la sección Agenda.
+const destinoCta = agenda.url || "#agenda";
+const externo = Boolean(agenda.url);
+---
+
+<header
+  id="nav"
+  class="fixed inset-x-0 top-0 z-40 transition-all duration-300"
+  data-nav
+>
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <a href="#" class="text-lg font-semibold tracking-tight">
+      Solotu<span class="text-brand-500">.IA</span>
+      <span class="sr-only">{site.nombre} — inicio</span>
+    </a>
+
+    <ul class="hidden items-center gap-8 md:flex">
+      {
+        nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="text-sm text-ink-500 transition-colors hover:text-ink-900"
+            >
+              {item.texto}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a
+      href={destinoCta}
+      target={externo ? "_blank" : undefined}
+      rel={externo ? "noopener noreferrer" : undefined}
+      class="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 active:scale-100"
+    >
+      {agenda.cta}
+    </a>
+  </nav>
+</header>
+
+<script>
+  // La nav es transparente arriba del todo y gana fondo al hacer scroll.
+  const barra = document.querySelector<HTMLElement>("[data-nav]");
+  if (barra) {
+    const clases = ["bg-white/80", "backdrop-blur-md", "shadow-sm"];
+    const actualizar = () => {
+      const activa = window.scrollY > 24;
+      clases.forEach((c) => barra.classList.toggle(c, activa));
+    };
+    actualizar();
+    window.addEventListener("scroll", actualizar, { passive: true });
+  }
+</script>

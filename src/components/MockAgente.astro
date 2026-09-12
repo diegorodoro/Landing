@@ -1,0 +1,95 @@
+---
+/* Mockup 2: el agente de atención. Los mensajes aparecen en secuencia. */
+const mensajes = [
+  { de: "cliente", texto: "¿Manejan entrega a Querétaro?" },
+  { de: "agente", texto: "Sí. A Querétaro entregamos en 48 h con flete incluido a partir de $15,000." },
+  { de: "cliente", texto: "¿Y si necesito factura con complemento de pago?" },
+  { de: "agente", texto: "Claro. Te la emitimos el mismo día. ¿Te paso con Ventas para cerrar el pedido?" },
+];
+---
+
+<div class="rounded-xl border border-ink-100 bg-white p-5 shadow-sm" aria-hidden="true">
+  <div class="flex items-center gap-2.5 border-b border-ink-100 pb-3">
+    <span class="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white">
+      S
+    </span>
+    <div>
+      <p class="text-sm font-medium leading-tight">Atención Solotu.IA</p>
+      <p class="text-xs text-green-600">En línea</p>
+    </div>
+  </div>
+
+  <div class="mt-4 space-y-2.5">
+    {
+      mensajes.map((mensaje, i) => (
+        <div
+          class:list={["burbuja flex", mensaje.de === "cliente" ? "justify-end" : "justify-start"]}
+          style={`--d: ${0.3 + i * 0.7}s`}
+        >
+          <p
+            class:list={[
+              "max-w-[85%] rounded-2xl px-3.5 py-2 text-xs leading-relaxed",
+              mensaje.de === "cliente"
+                ? "rounded-br-sm bg-ink-900 text-white"
+                : "rounded-bl-sm bg-ink-50 text-ink-700",
+            ]}
+          >
+            {mensaje.texto}
+          </p>
+        </div>
+      ))
+    }
+
+    <!-- Indicador de "escribiendo" -->
+    <div class="burbuja flex justify-start" style="--d: 3.1s">
+      <span class="flex gap-1 rounded-2xl rounded-bl-sm bg-ink-50 px-3.5 py-3">
+        <span class="punto h-1.5 w-1.5 rounded-full bg-ink-300"></span>
+        <span class="punto h-1.5 w-1.5 rounded-full bg-ink-300" style="--p: 0.15s"></span>
+        <span class="punto h-1.5 w-1.5 rounded-full bg-ink-300" style="--p: 0.3s"></span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes burbuja-entra {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .burbuja {
+    opacity: 0;
+    animation: burbuja-entra 0.5s var(--ease-out-soft) forwards;
+    animation-delay: var(--d, 0s);
+  }
+
+  @keyframes rebote {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+    30% {
+      transform: translateY(-4px);
+    }
+  }
+  .punto {
+    animation: rebote 1.2s ease-in-out infinite;
+    animation-delay: var(--p, 0s);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .burbuja {
+      opacity: 1;
+      animation: none;
+    }
+    .punto {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,67 @@
+---
+/* Mockup 1: el cotizador. Los renglones se van rellenando y el total sube. */
+const filas = [
+  { pieza: "Perfil A-12", cantidad: "400", precio: "$318.00" },
+  { pieza: "Tornillería M8", cantidad: "1,600", precio: "$12.40" },
+  { pieza: "Acabado anodizado", cantidad: "400", precio: "$41.00" },
+];
+---
+
+<div class="rounded-xl border border-ink-100 bg-white p-5 shadow-sm" aria-hidden="true">
+  <div class="flex items-center justify-between">
+    <p class="text-sm font-medium">Cotización #4821</p>
+    <span class="rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+      Generada
+    </span>
+  </div>
+
+  <table class="mt-4 w-full text-xs">
+    <thead>
+      <tr class="text-left text-ink-300">
+        <th class="pb-2 font-medium">Concepto</th>
+        <th class="pb-2 text-right font-medium">Cant.</th>
+        <th class="pb-2 text-right font-medium">Unitario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        filas.map((fila, i) => (
+          <tr class="fila border-t border-ink-100" style={`--d: ${0.3 + i * 0.35}s`}>
+            <td class="py-2.5 text-ink-700">{fila.pieza}</td>
+            <td class="py-2.5 text-right tabular-nums text-ink-500">{fila.cantidad}</td>
+            <td class="py-2.5 text-right tabular-nums text-ink-700">{fila.precio}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+
+  <div class="fila mt-3 flex items-baseline justify-between border-t-2 border-ink-900 pt-3" style="--d: 1.5s">
+    <span class="text-xs font-medium text-ink-500">Total</span>
+    <span class="text-xl font-semibold tabular-nums">$182,400.00</span>
+  </div>
+</div>
+
+<style>
+  @keyframes fila-entra {
+    from {
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .fila {
+    opacity: 0;
+    animation: fila-entra 0.6s var(--ease-out-soft) forwards;
+    animation-delay: var(--d, 0s);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fila {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>

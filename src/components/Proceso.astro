@@ -1,0 +1,37 @@
+---
+import { proceso } from "../config";
+---
+
+<section id="proceso" class="border-t border-ink-100 py-24 sm:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="max-w-2xl" data-reveal>
+      <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Cómo trabajamos</p>
+      <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        Del primer contacto a tu equipo operándolo solo
+      </h2>
+    </div>
+
+    <ol class="relative mt-14 max-w-3xl">
+      <!-- Línea vertical que conecta los pasos -->
+      <div
+        class="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-brand-500 via-brand-100 to-transparent"
+        aria-hidden="true"
+      >
+      </div>
+
+      {
+        proceso.map((paso, i) => (
+          <li class="relative flex gap-6 pb-10 last:pb-0" data-reveal style={`--d: ${i * 90}ms`}>
+            <span class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-brand-500 ring-2 ring-brand-500/40">
+              {i + 1}
+            </span>
+            <div class="pt-0.5">
+              <h3 class="text-lg font-semibold tracking-tight">{paso.titulo}</h3>
+              <p class="mt-1.5 leading-relaxed text-ink-500">{paso.texto}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,71 @@
+---
+import { producto } from "../config";
+import MockCotizador from "./MockCotizador.astro";
+import MockAgente from "./MockAgente.astro";
+import MockDashboard from "./MockDashboard.astro";
+---
+
+<section id="producto" class="relative overflow-hidden border-t border-ink-100 py-24 sm:py-32">
+  <div class="mx-auto max-w-6xl px-6">
+    <div class="max-w-2xl" data-reveal>
+      <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Producto</p>
+      <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+        {producto.titulo}
+      </h2>
+      <p class="mt-5 text-lg leading-relaxed text-ink-500">{producto.bajada}</p>
+    </div>
+
+    <div class="mt-16 space-y-20 sm:space-y-24">
+      {
+        producto.demos.map((demo, i) => (
+          <div
+            class:list={[
+              "grid items-center gap-10 lg:grid-cols-2 lg:gap-16",
+              // Se alterna el lado del mockup en pantallas grandes.
+              i % 2 === 1 && "lg:[&>*:first-child]:order-2",
+            ]}
+          >
+            <div data-reveal>
+              <span class="inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
+                {demo.etiqueta}
+              </span>
+              <h3 class="mt-4 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                {demo.titulo}
+              </h3>
+              <p class="mt-4 text-lg leading-relaxed text-ink-500">{demo.texto}</p>
+
+              <ul class="mt-6 space-y-3">
+                {demo.puntos.map((punto) => (
+                  <li class="flex gap-3 text-ink-700">
+                    <svg
+                      class="mt-1 h-4.5 w-4.5 shrink-0 text-brand-500"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.75"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span>{punto}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div data-reveal style="--d: 120ms" class="relative">
+              {/* Resplandor de acento detrás del mockup */}
+              <div
+                class="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-tr from-brand-500/10 to-transparent blur-2xl"
+                aria-hidden="true"
+              />
+              {demo.tipo === "cotizador" && <MockCotizador />}
+              {demo.tipo === "agente" && <MockAgente />}
+              {demo.tipo === "dashboard" && <MockDashboard />}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

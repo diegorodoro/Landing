@@ -1,0 +1,32 @@
+---
+/* Orden de las secciones de la landing.
+   Para reordenar, mueve la línea del componente. Nada más. */
+import Layout from "../layouts/Layout.astro";
+import Nav from "../components/Nav.astro";
+import Hero from "../components/Hero.astro";
+import Servicios from "../components/Servicios.astro";
+import Diferenciadores from "../components/Diferenciadores.astro";
+import ParaQuien from "../components/ParaQuien.astro";
+import Proceso from "../components/Proceso.astro";
+import Proposito from "../components/Proposito.astro";
+import Producto from "../components/Producto.astro";
+import Capacidades from "../components/Capacidades.astro";
+import Agenda from "../components/Agenda.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<Layout>
+  <Nav />
+  <main id="contenido">
+    <Hero />
+    <Producto />
+    <Servicios />
+    <Diferenciadores />
+    <ParaQuien />
+    <Proceso />
+    <Proposito />
+    <Capacidades />
+    <Agenda />
+  </main>
+  <Footer />
+</Layout>

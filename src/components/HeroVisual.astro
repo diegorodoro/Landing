@@ -1,0 +1,168 @@
+---
+/* Mockup animado del hero: una cotización entrando, procesándose y saliendo.
+   Todo es HTML + CSS (sin imágenes, sin JS): pesa bytes y no bloquea nada.
+   Las animaciones son solo transform/opacity => no provocan reflow. */
+---
+
+<div class="hero-mock relative select-none" aria-hidden="true">
+  <!-- Resplandor detrás de la tarjeta -->
+  <div
+    class="absolute -inset-4 rounded-[2rem] bg-gradient-to-tr from-brand-500/20 via-brand-500/5 to-transparent blur-2xl"
+  >
+  </div>
+
+  <div
+    class="relative rounded-2xl border border-ink-100 bg-white/90 p-5 shadow-2xl shadow-ink-900/10 backdrop-blur"
+  >
+    <!-- Barra superior tipo ventana -->
+    <div class="flex items-center gap-2 border-b border-ink-100 pb-3.5">
+      <span class="h-2.5 w-2.5 rounded-full bg-ink-100"></span>
+      <span class="h-2.5 w-2.5 rounded-full bg-ink-100"></span>
+      <span class="h-2.5 w-2.5 rounded-full bg-ink-100"></span>
+      <span class="ml-2 text-xs font-medium text-ink-300">Cotización automática</span>
+      <span class="ml-auto flex items-center gap-1.5 text-xs font-medium text-green-600">
+        <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+        Activo
+      </span>
+    </div>
+
+    <!-- Paso 1: entra la solicitud -->
+    <div class="mock-paso mt-4 flex items-start gap-3" style="--d: 0.2s">
+      <span
+        class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-ink-50 text-ink-500"
+      >
+        <svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 4h12v8H2z" /><path d="M2 4.5l6 4 6-4" stroke-linecap="round" />
+        </svg>
+      </span>
+      <div class="min-w-0 flex-1 rounded-lg bg-ink-50 px-3 py-2.5">
+        <p class="text-xs font-medium text-ink-700">Nueva solicitud · cliente</p>
+        <p class="mt-1 truncate text-xs text-ink-500">
+          "Necesito 400 piezas del modelo A-12 para el día 20"
+        </p>
+      </div>
+    </div>
+
+    <!-- Paso 2: el sistema procesa -->
+    <div class="mock-paso mt-2.5 flex items-start gap-3" style="--d: 1.1s">
+      <span
+        class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600"
+      >
+        <svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M8 1.5l1.7 3.6 3.8.5-2.8 2.7.7 3.9L8 10.4l-3.4 1.8.7-3.9L2.5 5.6l3.8-.5z" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="min-w-0 flex-1">
+        <div class="rounded-lg border border-brand-500/20 bg-brand-50/60 px-3 py-2.5">
+          <p class="text-xs font-medium text-brand-700">Consultando lista de precios y existencias</p>
+          <!-- Barra de progreso que se llena sola -->
+          <div class="mt-2 h-1 overflow-hidden rounded-full bg-brand-100">
+            <div class="mock-barra h-full w-full origin-left rounded-full bg-brand-500"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paso 3: cotización lista -->
+    <div class="mock-paso mt-2.5 flex items-start gap-3" style="--d: 2.2s">
+      <span
+        class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-600"
+      >
+        <svg class="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75">
+          <path d="M3.5 8.5l3 3 6-7" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      <div class="min-w-0 flex-1 rounded-lg border border-green-500/20 bg-green-50/60 px-3 py-2.5">
+        <div class="flex items-baseline justify-between gap-3">
+          <p class="text-xs font-medium text-ink-700">Cotización lista para enviar</p>
+          <p class="text-sm font-semibold tabular-nums text-ink-900">$182,400</p>
+        </div>
+        <p class="mt-1 text-xs text-ink-500">Pendiente de aprobación · 1 revisor</p>
+      </div>
+    </div>
+
+    <!-- Pie con el ahorro -->
+    <div
+      class="mock-paso mt-4 flex items-center justify-between border-t border-ink-100 pt-3.5"
+      style="--d: 2.9s"
+    >
+      <span class="text-xs text-ink-500">Tiempo del proceso</span>
+      <span class="flex items-center gap-2 text-xs">
+        <span class="text-ink-300 line-through">2 días</span>
+        <span aria-hidden="true" class="text-ink-300">&rarr;</span>
+        <span class="font-semibold text-green-600">1 min 40 s</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Cada paso aparece en secuencia y el ciclo completo se repite. */
+  @keyframes paso-entra {
+    0%,
+    4% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    12%,
+    92% {
+      opacity: 1;
+      transform: none;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  .mock-paso {
+    opacity: 0;
+    animation: paso-entra 9s var(--ease-out-soft) infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  @keyframes barra-llena {
+    0%,
+    8% {
+      transform: scaleX(0);
+    }
+    22%,
+    100% {
+      transform: scaleX(1);
+    }
+  }
+
+  .mock-barra {
+    animation: barra-llena 9s var(--ease-out-soft) infinite;
+    animation-delay: 1.1s;
+  }
+
+  /* Flotación muy leve de toda la tarjeta. */
+  @keyframes flota {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .hero-mock {
+    animation: flota 7s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-mock,
+    .mock-barra {
+      animation: none;
+    }
+    .mock-paso {
+      opacity: 1;
+      animation: none;
+    }
+    .mock-barra {
+      transform: scaleX(1);
+    }
+  }
+</style>
