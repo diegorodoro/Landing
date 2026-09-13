@@ -1,21 +1,19 @@
 ---
 import { proposito } from "../config";
-// La marquesina duplica la lista para que el bucle no tenga salto visible.
-const valoresBucle = [...proposito.valores, ...proposito.valores];
 ---
 
-<section class="py-24 sm:py-32">
-  <div class="mx-auto max-w-6xl px-6">
+<section class="flex min-h-svh items-center py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-6">
     <div class="grid gap-12 lg:grid-cols-2 lg:gap-20">
       <div data-reveal>
-        <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Misión</p>
+        <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Misión</p>
         <p class="mt-4 text-2xl font-medium leading-snug tracking-tight text-balance">
           {proposito.mision}
         </p>
       </div>
 
       <div data-reveal style="--d: 120ms">
-        <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Visión</p>
+        <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Visión</p>
         <p class="mt-4 text-2xl font-medium leading-snug tracking-tight text-balance">
           {proposito.vision}
         </p>
@@ -39,21 +37,4 @@ const valoresBucle = [...proposito.valores, ...proposito.valores];
     </div>
   </div>
 
-  <!-- Valores en marquesina. Se pausa al pasar el cursor. -->
-  <div class="marquee relative mt-16 overflow-hidden" data-reveal>
-    <div class="marquee-track flex w-max gap-4">
-      {
-        valoresBucle.map((valor, i) => (
-          <span
-            class="rounded-full border border-ink-100 px-6 py-2.5 text-lg text-ink-500"
-            aria-hidden={i >= proposito.valores.length ? "true" : undefined}
-          >
-            {valor}
-          </span>
-        ))
-      }
-    </div>
-    <div class="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white"></div>
-    <div class="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-white"></div>
-  </div>
 </section>

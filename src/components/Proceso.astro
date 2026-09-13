@@ -2,11 +2,11 @@
 import { proceso } from "../config";
 ---
 
-<section id="proceso" class="border-t border-ink-100 py-24 sm:py-32">
-  <div class="mx-auto max-w-6xl px-6">
+<section id="proceso" class="flex min-h-svh items-center bg-ink-50 py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-6">
     <div class="max-w-2xl" data-reveal>
-      <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Cómo trabajamos</p>
-      <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+      <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Cómo trabajamos</p>
+      <h2 class="mt-4 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
         Del primer contacto a tu equipo operándolo solo
       </h2>
     </div>
@@ -14,7 +14,8 @@ import { proceso } from "../config";
     <ol class="relative mt-14 max-w-3xl">
       <!-- Línea vertical que conecta los pasos -->
       <div
-        class="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-brand-500 via-brand-100 to-transparent"
+        class="absolute left-[15px] top-2 bottom-2 w-px bg-gradient-to-b from-ink-900 via-ink-300 to-ink-100"
+        data-draw
         aria-hidden="true"
       >
       </div>
@@ -22,7 +23,7 @@ import { proceso } from "../config";
       {
         proceso.map((paso, i) => (
           <li class="relative flex gap-6 pb-10 last:pb-0" data-reveal style={`--d: ${i * 90}ms`}>
-            <span class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-sm font-semibold text-brand-500 ring-2 ring-brand-500/40">
+            <span class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-900 text-sm font-semibold tabular-nums text-white">
               {i + 1}
             </span>
             <div class="pt-0.5">
@@ -35,3 +36,27 @@ import { proceso } from "../config";
     </ol>
   </div>
 </section>
+
+<script>
+  // Dibuja la línea del proceso cuando la lista entra en pantalla. El trazo
+  // avanza en el mismo sentido en que se leen los pasos, así el movimiento
+  // dice algo sobre el contenido en lugar de adornarlo.
+  const linea = document.querySelector<HTMLElement>("[data-draw]");
+  const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (linea && !quieto && "IntersectionObserver" in window) {
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        for (const entrada of entradas) {
+          if (!entrada.isIntersecting) continue;
+          entrada.target.classList.add("is-drawn");
+          observador.unobserve(entrada.target);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observador.observe(linea);
+  } else if (linea) {
+    linea.classList.add("is-drawn");
+  }
+</script>

@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# skills instaladas (se reinstalan con `npx skills add dickwu/apple-design-skill`)
+.agents/
+.claude/
+skills-lock.json

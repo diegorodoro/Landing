@@ -5,7 +5,19 @@ const destinoCta = agenda.url || "#agenda";
 const externo = Boolean(agenda.url);
 ---
 
-<section class="relative overflow-hidden pt-32 pb-20 sm:pt-40 sm:pb-28">
+{/*
+  El hero ocupa el alto de la ventana. Dos decisiones deliberadas:
+
+  · min-h, NO h: si el contenido crece —texto más grande por accesibilidad,
+    ventana baja, zoom— la sección crece con él en lugar de recortarlo. Con
+    h-svh el bloque de cifras se cortaría sin aviso.
+  · svh, NO vh: en móvil 100vh mide la ventana SIN la barra del navegador,
+    así que el contenido queda por debajo del pliegue justo en el caso que
+    queremos evitar. svh usa la ventana más pequeña y siempre entra.
+
+  layout.md › Best practices: "Extend content to fill the screen or window."
+*/}
+<section class="relative flex min-h-svh items-center overflow-hidden pt-20 pb-14 sm:pt-24 sm:pb-16">
   <!-- Fondo decorativo: manchas que respiran + rejilla tenue. -->
   <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
     <div
@@ -21,36 +33,28 @@ const externo = Boolean(agenda.url);
     <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white"></div>
   </div>
 
-  <div class="mx-auto max-w-6xl px-6">
-    <div class="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+  <div class="mx-auto w-full max-w-6xl px-6">
+    <div class="grid items-center gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
       <!-- Columna de texto -->
       <div>
-        <p
-          class="anim-in inline-flex items-center gap-2 rounded-full border border-ink-100 bg-white/60 px-4 py-1.5 text-sm text-ink-500 backdrop-blur"
-        >
-          <span class="relative flex h-2 w-2">
-            <span
-              class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-75"
-            ></span>
-            <span class="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span>
-          </span>
+        <p class="anim-in text-sm font-medium uppercase tracking-widest text-ink-500">
           {hero.eyebrow}
         </p>
 
         <h1
-          class="anim-in mt-7 text-4xl font-semibold leading-[1.1] tracking-tight text-balance sm:text-5xl xl:text-6xl"
+          class="anim-in mt-5 text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-balance sm:text-5xl xl:text-6xl"
           style="--d: 100ms"
         >
           {hero.titulo}
-          <span class="text-brand-500">{hero.tituloAcento}</span>
+          <span class="text-ink-500">{hero.tituloAcento}</span>
         </h1>
 
-        <p class="anim-in mt-6 max-w-xl text-lg leading-relaxed text-ink-500" style="--d: 200ms">
+        <p class="anim-in mt-4 max-w-2xl text-lg leading-relaxed text-ink-500" style="--d: 200ms">
           {hero.bajada}
         </p>
 
         <div
-          class="anim-in mt-9 flex flex-col gap-3 sm:flex-row sm:items-center"
+          class="anim-in mt-6 flex flex-col gap-3 sm:flex-row sm:items-center"
           style="--d: 300ms"
         >
           <a
@@ -74,13 +78,16 @@ const externo = Boolean(agenda.url);
         </div>
 
         <!-- Cifras: cuentan hacia arriba al cargar (ver script al final). -->
-        <dl class="anim-in mt-14 grid grid-cols-3 gap-6" style="--d: 400ms">
+        <dl class="anim-in mt-8 grid grid-cols-3 gap-6" style="--d: 400ms">
           {
             hero.datos.map((dato) => (
-              <div class="border-l-2 border-brand-100 pl-4">
+              <div class="border-l-2 border-ink-300 pl-4">
                 <dt class="sr-only">{dato.etiqueta}</dt>
                 <dd>
-                  <span class="block text-2xl font-semibold tracking-tight sm:text-3xl">
+                  <span
+                    class="block text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl"
+                    data-cifra
+                  >
                     {dato.valor}
                   </span>
                   <span class="mt-1 block text-sm leading-snug text-ink-500">{dato.etiqueta}</span>
@@ -98,6 +105,63 @@ const externo = Boolean(agenda.url);
     </div>
   </div>
 </section>
+
+<script>
+  /*
+    Las cifras del hero cuentan hacia arriba al cargar. Anima TODOS los enteros
+    de cada cadena a la vez, así "2–4 sem" sube como "0–0" -> "2–4" en lugar de
+    mover solo un número y verse roto.
+
+    motion.md › Best practices: "Aim for brevity and precision in feedback
+    animations" y "Make motion optional" — con reduced-motion el valor final
+    aparece directo, sin animar.
+  */
+  const cifras = document.querySelectorAll<HTMLElement>("[data-cifra]");
+  const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (!quieto) {
+    // El bloque de cifras entra con --d:400ms + 0.9s de animación, así que no
+    // está del todo visible hasta los ~1300ms. Antes la cuenta empezaba en 0 y
+    // acababa en 1100ms: terminaba mientras el elemento aún aparecía y no se
+    // veía. Ahora espera a que entre y cuenta más despacio.
+    const ARRANQUE = 450;
+    const DURACION = 2300;
+
+    // Exponente suave (1.6 en vez de 3): con una curva muy pronunciada el 87%
+    // de la cuenta ocurría en la primera mitad y solo se veía el último dígito
+    // arrastrándose. Así los números se mueven durante todo el recorrido.
+    const suavizar = (t: number) => 1 - Math.pow(1 - t, 1.6);
+
+    for (const cifra of cifras) {
+      const original = cifra.textContent ?? "";
+      const numeros = original.match(/\d+/g);
+      if (!numeros) continue;
+
+      const objetivos = numeros.map(Number);
+      const inicio = performance.now() + ARRANQUE;
+
+      // Arranca en cero para que el salto hasta el valor final sea visible.
+      cifra.textContent = original.replace(/\d+/g, "0");
+
+      const pintar = (ahora: number) => {
+        if (ahora < inicio) {
+          requestAnimationFrame(pintar);
+          return;
+        }
+        const avance = Math.min((ahora - inicio) / DURACION, 1);
+        const f = suavizar(avance);
+        let i = 0;
+        cifra.textContent = original.replace(/\d+/g, () =>
+          String(Math.round(objetivos[i++] * f)),
+        );
+        if (avance < 1) requestAnimationFrame(pintar);
+        else cifra.textContent = original;
+      };
+
+      requestAnimationFrame(pintar);
+    }
+  }
+</script>
 
 <style>
   /* Rejilla sutil de fondo, dibujada con gradientes: cero peticiones. */

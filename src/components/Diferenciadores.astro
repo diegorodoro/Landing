@@ -1,25 +1,56 @@
 ---
-import { diferenciadores } from "../config";
+import { diferenciadores, capacidades } from "../config";
+import Icono from "./Icono.astro";
 ---
 
-<section class="bg-ink-900 py-24 text-white sm:py-32">
-  <div class="mx-auto max-w-6xl px-6">
-    <h2 class="max-w-3xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl" data-reveal>
+{/*
+  FORTALEZAS DE LA AGENCIA. Absorbió a la antigua sección "Capacidades":
+  las dos respondían "por qué nosotros". De las disciplinas se pinta solo el
+  nombre — sus textos siguen intactos en config.ts.
+
+  Los iconos son del set propio (Icono.astro): misma rejilla, mismo trazo,
+  heredan el color del texto. icons.md › Best practices: "match the weights of
+  interface icons and adjacent text."
+  Contraste sobre ink-50: ink-900 16.63:1 · ink-500 5.58:1
+*/}
+<section class="flex min-h-svh items-center bg-ink-50 py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-6">
+    <h2 class="max-w-3xl text-2xl font-semibold tracking-tight text-balance sm:text-3xl" data-reveal>
       Por qué nosotros y no una consultora con una presentación
     </h2>
 
-    <div class="mt-14 grid gap-10 md:grid-cols-3">
+    <div class="mt-12 grid gap-10 md:grid-cols-3">
       {
         diferenciadores.map((item, i) => (
           <div data-reveal style={`--d: ${i * 120}ms`}>
-            <div class="h-px w-full bg-white/15">
-              <div class="h-px w-12 bg-brand-500" />
-            </div>
-            <h3 class="mt-6 text-xl font-semibold tracking-tight">{item.titulo}</h3>
-            <p class="mt-3 leading-relaxed text-ink-300">{item.texto}</p>
+            {/* El icono va dentro de un cuadro, para que las 3 columnas
+                arranquen con el mismo peso visual aunque el dibujo cambie. */}
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-ink-900 text-white">
+              <Icono nombre={item.icono} clase="h-5.5 w-5.5" />
+            </span>
+
+            <h3 class="mt-5 text-xl font-semibold tracking-tight">{item.titulo}</h3>
+            <p class="mt-3 leading-relaxed text-ink-500">{item.texto}</p>
           </div>
         ))
       }
+    </div>
+
+    {/* Las cuatro disciplinas, como tira compacta con su icono. */}
+    <div class="mt-16 border-t border-ink-100 pt-8" data-reveal style="--d: 360ms">
+      <p class="text-sm font-medium uppercase tracking-widest text-ink-500">
+        Cuatro disciplinas en cada proyecto
+      </p>
+      <ul class="mt-6 grid gap-x-8 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          capacidades.map((item) => (
+            <li class="flex items-center gap-3">
+              <Icono nombre={item.icono} clase="h-5 w-5 shrink-0 text-ink-500" />
+              <span class="font-medium">{item.titulo}</span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </div>
 </section>

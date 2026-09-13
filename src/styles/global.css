@@ -35,20 +35,29 @@
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Color de marca (acento). Cambia estos 4 y cambia la identidad. */
-  --color-brand-50: #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-500: #4f46e5;
-  --color-brand-600: #4338ca;
-  --color-brand-700: #3730a3;
+  /* ACENTO. Hoy es neutral: el protagonismo lo cargan la tipografía y la
+     estructura, no el color. Cambia estos valores y cambia la identidad
+     sin tocar un solo componente. */
+  --color-brand-50: #f5f3f0; /* lavado cálido (fondo del hero) */
+  --color-brand-100: #e7e5e4;
+  --color-brand-500: #1c1917; /* CTA primario. Blanco encima: 17.49:1 */
+  --color-brand-600: #3f3a36; /* hover */
+  --color-brand-700: #0f0d0c;
+  /* Acento sobre fondo oscuro: 6.93:1 sobre ink-900. */
+  --color-brand-300: #a8a29e;
 
-  /* Neutros */
-  --color-ink-900: #0c0d12;
-  --color-ink-700: #2b2d38;
-  --color-ink-500: #5b5f70;
-  --color-ink-300: #a7abbb;
-  --color-ink-100: #e7e8ee;
-  --color-ink-50: #f6f7fa;
+  /* Neutros CÁLIDOS. El gris azulado anterior (#0c0d12 … #a7abbb) es el
+     tono por defecto del género; este tiene algo de tierra y se lee menos
+     genérico sin gritar. Ratios sobre blanco al lado de cada uno. */
+  --color-ink-900: #1c1917; /* 17.49:1 */
+  --color-ink-700: #3f3a36; /* 11.23:1 — cuerpo */
+  --color-ink-500: #6b6360; /*  5.87:1 — atenuado */
+  --color-ink-300: #a8a29e; /*  2.52:1 — SOLO sobre fondo oscuro */
+  --color-ink-100: #e7e5e4; /* bordes decorativos y divisores */
+  --color-ink-50: #faf9f8;
+  /* Borde de campos de formulario: WCAG 1.4.11 pide 3:1 a los bordes de un
+     control, e ink-100 solo da 1.26:1. Este da 3.82:1. */
+  --color-line: #8a817a;
 
   /* Ritmo de animación */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
@@ -79,6 +88,107 @@ body {
   outline: 2px solid var(--color-brand-500);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+/* ==========================================================================
+   NAV — material tipo Liquid Glass
+   La barra es la ÚNICA superficie con cristal de toda la página. Es la capa
+   funcional; el contenido nunca lleva glass.
+   liquid-glass.md › Review checklist 1: "Glass appears only on floating
+   controls and navigation. Glass on app backgrounds, cards, list rows, or
+   content containers is a defect."
+
+   Variante Regular (la indicada para superficies con texto). Valores de la
+   sección de traducción web de la guía: blur 20–40px, relleno 60–80%,
+   saturación 1.2–1.5, borde de un píxel translúcido.
+   ========================================================================== */
+[data-nav] {
+  --glass-relleno: rgb(255 255 255 / 0.72);
+  --glass-borde: rgb(28 25 23 / 0.08);
+  --glass-texto: var(--color-ink-500);
+  --glass-fuerte: var(--color-ink-900);
+  --glass-cta-fondo: var(--color-ink-900);
+  --glass-cta-texto: #fff;
+}
+
+[data-nav].glass {
+  background: var(--glass-relleno);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--glass-borde);
+}
+
+/* El cristal no tiene color propio: toma el de lo que hay debajo. Cuando la
+   barra pasa sobre una sección oscura, invierte material y etiquetas.
+   liquid-glass.md › Color on glass: "Liquid Glass has no inherent color...
+   Symbols and text on it default to monochrome: darker over light content,
+   lighter over dark." */
+[data-nav].glass-oscura {
+  --glass-relleno: rgb(28 25 23 / 0.62);
+  --glass-borde: rgb(255 255 255 / 0.14);
+  --glass-texto: var(--color-ink-300);
+  --glass-fuerte: #fff;
+  --glass-cta-fondo: #fff;
+  --glass-cta-texto: var(--color-ink-900);
+}
+
+/* Scroll edge effect: banda donde el contenido se desenfoca al encontrarse con
+   la barra, en lugar de chocar con ella (checklist 6). */
+[data-nav].glass::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 1.25rem;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, #000, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
+  pointer-events: none;
+}
+
+[data-nav] .nav-marca {
+  color: var(--glass-fuerte);
+}
+[data-nav] .nav-marca-acento,
+[data-nav] .nav-enlace {
+  color: var(--glass-texto);
+}
+[data-nav] .nav-enlace:hover {
+  color: var(--glass-fuerte);
+}
+[data-nav] .nav-cta {
+  background: var(--glass-cta-fondo);
+  color: var(--glass-cta-texto);
+}
+
+/* Estados de accesibilidad (checklist 5).
+   · Menos transparencia -> relleno opaco, sin desenfoque.
+   · Más contraste       -> relleno sólido y borde marcado. */
+@media (prefers-reduced-transparency: reduce) {
+  [data-nav].glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    --glass-relleno: #fff;
+  }
+  [data-nav].glass.glass-oscura {
+    --glass-relleno: var(--color-ink-900);
+  }
+  [data-nav].glass::after {
+    display: none;
+  }
+}
+@media (prefers-contrast: more) {
+  [data-nav].glass {
+    --glass-relleno: #fff;
+    --glass-borde: var(--color-ink-900);
+    --glass-texto: var(--color-ink-700);
+  }
+  [data-nav].glass.glass-oscura {
+    --glass-relleno: var(--color-ink-900);
+    --glass-borde: #fff;
+    --glass-texto: var(--color-ink-100);
+  }
 }
 
 /* ==========================================================================
@@ -139,7 +249,8 @@ body {
   will-change: transform;
 }
 
-/* Línea que se dibuja sola (proceso) */
+/* Línea que se dibuja sola (proceso). El keyframe existía sin usarse;
+   ahora lo dispara [data-draw] al entrar en pantalla. */
 @keyframes draw {
   from {
     transform: scaleY(0);
@@ -148,21 +259,12 @@ body {
     transform: scaleY(1);
   }
 }
-
-/* Marquesina de valores */
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+[data-draw] {
+  transform: scaleY(0);
+  transform-origin: top;
 }
-.marquee-track {
-  animation: marquee 32s linear infinite;
-}
-.marquee:hover .marquee-track {
-  animation-play-state: paused;
+[data-draw].is-drawn {
+  animation: draw 1.4s var(--ease-out-soft) forwards;
 }
 
 /* ==========================================================================
@@ -185,5 +287,8 @@ body {
   }
   .anim-in {
     opacity: 1;
+  }
+  [data-draw] {
+    transform: none;
   }
 }

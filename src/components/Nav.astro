@@ -6,25 +6,29 @@ const destinoCta = agenda.url || "#agenda";
 const externo = Boolean(agenda.url);
 ---
 
-<header
-  id="nav"
-  class="fixed inset-x-0 top-0 z-40 transition-all duration-300"
-  data-nav
->
-  <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-    <a href="#" class="text-lg font-semibold tracking-tight">
-      Solotu<span class="text-brand-500">.IA</span>
+{/*
+  Barra de navegación con material tipo Liquid Glass. Es la capa funcional y la
+  única superficie con cristal de la página (liquid-glass.md › checklist 2:
+  "Count the custom glass surfaces. More than the few most important functional
+  elements is a defect").
+
+  El material y las etiquetas viven en global.css como variables, para que la
+  barra pueda invertirse cuando pasa sobre una sección oscura.
+*/}
+<header id="nav" class="fixed inset-x-0 top-0 z-40 transition-colors duration-300" data-nav>
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+    {/* py-2 en el enlace lleva el área pulsable a ~36px de alto: por encima del
+        mínimo de 28×28 de escritorio (checklist 7). */}
+    <a href="#" class="nav-marca py-2 text-lg font-semibold tracking-tight transition-colors">
+      Solotu<span class="nav-marca-acento transition-colors">.IA</span>
       <span class="sr-only">{site.nombre} — inicio</span>
     </a>
 
-    <ul class="hidden items-center gap-8 md:flex">
+    <ul class="hidden items-center gap-7 md:flex">
       {
         nav.map((item) => (
           <li>
-            <a
-              href={item.href}
-              class="text-sm text-ink-500 transition-colors hover:text-ink-900"
-            >
+            <a href={item.href} class="nav-enlace block py-2 text-sm transition-colors">
               {item.texto}
             </a>
           </li>
@@ -32,11 +36,15 @@ const externo = Boolean(agenda.url);
       }
     </ul>
 
+    {/* Única acción con fondo sólido de la barra. liquid-glass.md › Color on
+        glass: "To emphasize a primary action, color the background rather than
+        the symbol or label" y "Refrain from adding color to the background of
+        multiple controls". py-3 da 44px de alto, el objetivo táctil de móvil. */}
     <a
       href={destinoCta}
       target={externo ? "_blank" : undefined}
       rel={externo ? "noopener noreferrer" : undefined}
-      class="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 active:scale-100"
+      class="nav-cta rounded-full px-5 py-3 text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-100"
     >
       {agenda.cta}
     </a>
@@ -44,15 +52,49 @@ const externo = Boolean(agenda.url);
 </header>
 
 <script>
-  // La nav es transparente arriba del todo y gana fondo al hacer scroll.
+  /*
+    Dos comportamientos:
+
+    1. El cristal aparece al separarse del borde superior. Arriba del todo la
+       barra es transparente: no hay nada debajo que reflejar.
+
+    2. El material se adapta a lo que tiene debajo. La guía pide "sample the
+       luminance beneath the surface and switch label colors between dark and
+       light": sin esto, la barra clara con texto oscuro pasaría sobre las
+       secciones oscuras (Producto, Agenda) y chocaría con ellas.
+
+       En lugar de muestrear píxeles —caro en cada scroll— se observa una franja
+       fina a la altura de la barra: la sección que la cruza decide el tono.
+  */
   const barra = document.querySelector<HTMLElement>("[data-nav]");
+
   if (barra) {
-    const clases = ["bg-white/80", "backdrop-blur-md", "shadow-sm"];
-    const actualizar = () => {
-      const activa = window.scrollY > 24;
-      clases.forEach((c) => barra.classList.toggle(c, activa));
-    };
-    actualizar();
-    window.addEventListener("scroll", actualizar, { passive: true });
+    // 1. Cristal al hacer scroll
+    const alternarCristal = () => barra.classList.toggle("glass", window.scrollY > 24);
+    alternarCristal();
+    window.addEventListener("scroll", alternarCristal, { passive: true });
+
+    // 2. Tono según la sección que pasa por debajo
+    const oscuras = document.querySelectorAll("[data-fondo-oscuro]");
+
+    if (oscuras.length && "IntersectionObserver" in window) {
+      const alto = barra.offsetHeight || 64;
+      const cruzando = new Set<Element>();
+
+      const observador = new IntersectionObserver(
+        (entradas) => {
+          for (const entrada of entradas) {
+            if (entrada.isIntersecting) cruzando.add(entrada.target);
+            else cruzando.delete(entrada.target);
+          }
+          barra.classList.toggle("glass-oscura", cruzando.size > 0);
+        },
+        // Franja de detección: desde el borde superior hasta el bajo de la
+        // barra. Todo lo que quede por debajo se ignora.
+        { rootMargin: `0px 0px -${Math.max(window.innerHeight - alto, 0)}px 0px` },
+      );
+
+      oscuras.forEach((s) => observador.observe(s));
+    }
   }
 </script>

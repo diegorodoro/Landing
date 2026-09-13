@@ -57,16 +57,19 @@ export const hero = {
 export const diferenciadores = [
   {
     titulo: "Lo hemos hecho en nuestra propia operación",
+    icono: "mecanismo" as const,
     texto:
       "No llegamos a teorizar. Las soluciones que proponemos las construimos y las usamos primero en nuestras propias empresas.",
   },
   {
     titulo: "Elegimos la herramienta según el caso",
+    icono: "ajustes" as const,
     texto:
       "No te vendemos una plataforma. Evaluamos costo y capacidad antes de cada proyecto y usamos lo que resuelva tu problema.",
   },
   {
     titulo: "Te capacitamos para que seas dueño de tu IA",
+    icono: "llave" as const,
     texto:
       "Al terminar, tu equipo sabe operar y mantener lo que construimos. No te dejamos dependiendo de nosotros.",
   },
@@ -78,6 +81,7 @@ export const servicios = [
     resumen:
       "Sesión de 90 minutos y un reporte con tres oportunidades priorizadas y un piloto propuesto con alcance.",
     duracion: "Entrega en 1 semana",
+    semanas: [1, 1],
     destacado: true,
   },
   {
@@ -85,6 +89,7 @@ export const servicios = [
     resumen:
       "Una automatización, dashboard o agente acotado que ataca tu dolor número uno. Resultado medible, no una demo.",
     duracion: "2 a 4 semanas",
+    semanas: [2, 4],
     destacado: false,
   },
   {
@@ -92,6 +97,7 @@ export const servicios = [
     resumen:
       "Cotizador, agente de atención, sistema de datos con dashboard o integración entre tus herramientas actuales.",
     duracion: "6 a 12 semanas",
+    semanas: [6, 12],
     destacado: false,
   },
   {
@@ -108,7 +114,7 @@ export const servicios = [
     duracion: "Mensual",
     destacado: false,
   },
-] as const;
+];
 
 export const paraQuien = [
   {
@@ -186,21 +192,25 @@ export const proposito = {
 export const capacidades = [
   {
     titulo: "Operación y procesos",
+    icono: "flujo" as const,
     texto:
       "Mapeamos cómo trabaja tu empresa hoy antes de automatizar nada. Sin esto, la IA solo acelera el desorden.",
   },
   {
     titulo: "Tecnología y datos",
+    icono: "capas" as const,
     texto:
       "Construcción, integración con tus sistemas actuales y seguridad de la información de tu empresa.",
   },
   {
     titulo: "Modelo de negocio",
+    icono: "barras" as const,
     texto:
       "Calculamos el retorno antes de empezar. Si un proceso no justifica la inversión, te lo decimos.",
   },
   {
     titulo: "Capacitación",
+    icono: "libro" as const,
     texto:
       "Formamos a tu equipo para que opere y mantenga lo que construimos, sin depender de nosotros.",
   },

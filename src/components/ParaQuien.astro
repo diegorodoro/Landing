@@ -1,12 +1,13 @@
 ---
 import { paraQuien } from "../config";
+import Icono from "./Icono.astro";
 ---
 
-<section id="para-quien" class="py-24 sm:py-32">
-  <div class="mx-auto max-w-6xl px-6">
+<section id="para-quien" class="flex min-h-svh items-center py-20 sm:py-24">
+  <div class="mx-auto w-full max-w-6xl px-6">
     <div class="max-w-2xl" data-reveal>
-      <p class="text-sm font-medium uppercase tracking-widest text-brand-500">Para quién</p>
-      <h2 class="mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+      <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Para quién</p>
+      <h2 class="mt-4 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
         Si te reconoces en esta lista, tenemos de qué hablar
       </h2>
       <p class="mt-5 text-lg leading-relaxed text-ink-500">
@@ -15,7 +16,7 @@ import { paraQuien } from "../config";
       </p>
     </div>
 
-    <div class="mt-14 grid gap-6 lg:grid-cols-2">
+    <div class="mt-12 grid gap-6 lg:grid-cols-2">
       {
         paraQuien.map((grupo, i) => (
           <div
@@ -29,16 +30,7 @@ import { paraQuien } from "../config";
             <ul class="mt-7 space-y-3.5">
               {grupo.senales.map((senal) => (
                 <li class="flex gap-3 leading-relaxed text-ink-700">
-                  <svg
-                    class="mt-1 h-5 w-5 shrink-0 text-brand-500"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.75"
-                    aria-hidden="true"
-                  >
-                    <path d="M4 10.5l4 4 8-9" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
+                  <Icono nombre="check" clase="mt-1 h-5 w-5 shrink-0 text-brand-500" />
                   <span>{senal}</span>
                 </li>
               ))}
