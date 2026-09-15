@@ -15,48 +15,103 @@ import logoBlanco from "../assets/brand/solotu-logo-blanco.png";
   · Reutiliza el robot y el gradiente vivo de la landing.
   · Respeta el modo oscuro del sistema (lo aplica el script de Layout).
 */}
+{/* Alto EXACTO de la ventana (h-svh), sin scroll: los tamaños y espacios
+    verticales se escalan con el alto de pantalla (clamp con svh) para que
+    todo quepa desde un móvil apaisado hasta un monitor grande. */}
 <main
   id="contenido"
-  class="gradiente-claro flex min-h-svh flex-col items-center justify-center bg-ink-50 px-6 py-16 text-center"
+  class="proximamente gradiente-claro flex h-svh flex-col items-center justify-center overflow-hidden bg-ink-50 px-6 text-center"
 >
-  {/* Logo en dos versiones según el tema */}
-  <span class="proximamente-logo relative block h-8 w-[135px]">
-    <Image src={logo} alt={site.nombre} height={32} densities={[1, 2, 3]} class="logo-claro absolute inset-0 h-8 w-auto" loading="eager" />
-    <Image src={logoBlanco} alt="" height={32} densities={[1, 2, 3]} class="logo-oscuro absolute inset-0 h-8 w-auto" loading="eager" />
+  {/* Logo en dos versiones según el tema, fijo arriba */}
+  <span class="proximamente-logo block h-7 w-[118px] sm:h-8 sm:w-[135px]">
+    <Image src={logo} alt={site.nombre} height={32} densities={[1, 2, 3]} class="logo-claro absolute inset-0 h-full w-auto" loading="eager" />
+    <Image src={logoBlanco} alt="" height={32} densities={[1, 2, 3]} class="logo-oscuro absolute inset-0 h-full w-auto" loading="eager" />
   </span>
 
   <Robot
-    clase="mt-16 w-40 sm:w-48"
+    clase="proximamente-robot"
     saludos={["¡Hola!", "Estamos construyendo algo", "Muy pronto, ¡prometido!"]}
   />
 
-  <p class="mt-10 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1.5 text-sm font-semibold uppercase tracking-widest text-acento">
+  <p class="proximamente-etiqueta inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1.5 text-sm font-semibold uppercase tracking-widest text-acento">
     <span class="proximamente-punto relative flex h-2 w-2" aria-hidden="true">
       <span class="absolute inset-0 rounded-full bg-acento"></span>
     </span>
     Próximamente
   </p>
 
-  <h1 class="mt-5 max-w-2xl text-4xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-5xl">
+  <h1 class="proximamente-titulo max-w-2xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance">
     IA que resuelve la operación de tu empresa
   </h1>
-  <p class="mt-5 max-w-lg text-lg leading-relaxed text-ink-500">
+  <p class="proximamente-texto max-w-lg leading-relaxed text-ink-500">
     Estamos terminando nuestro sitio. Mientras tanto, escríbenos y platicamos de lo que necesitas.
   </p>
 
   <a
     href={`mailto:${site.email}`}
-    class="mt-8 inline-flex items-center gap-2 rounded-full bg-accion px-7 py-3.5 font-medium text-white shadow-lg shadow-accion/25 transition-all duration-200 hover:bg-accion-hover hover:shadow-xl hover:shadow-accion/30"
+    class="proximamente-cta inline-flex items-center gap-2 rounded-full bg-accion px-7 py-3.5 font-medium text-white shadow-lg shadow-accion/25 transition-all duration-200 hover:bg-accion-hover hover:shadow-xl hover:shadow-accion/30"
   >
     Escríbenos
     <span aria-hidden="true">&rarr;</span>
   </a>
-  <p class="mt-3 text-sm text-ink-500">{site.email}</p>
+  <p class="mt-2 text-sm text-ink-500">{site.email}</p>
 
-  <p class="mt-16 text-sm text-ink-500">{site.zonas}</p>
+  <p class="proximamente-zonas px-6 text-xs text-ink-500 sm:text-sm">{site.zonas}</p>
 </main>
 
 <style>
+  /* ---------- Encaje en una pantalla ----------
+     Reserva arriba (logo) y abajo (zonas) y centra el resto entre ambos. */
+  .proximamente {
+    position: relative;
+    padding-block: clamp(3.5rem, 11svh, 6rem);
+  }
+  .proximamente-logo {
+    position: absolute;
+    top: clamp(1rem, 4.5svh, 2.5rem);
+    left: 50%;
+    translate: -50% 0;
+  }
+  .proximamente-zonas {
+    position: absolute;
+    bottom: clamp(0.75rem, 3.5svh, 2rem);
+    left: 0;
+    right: 0;
+  }
+  /* El robot es lo que más ocupa: su ancho sigue al alto de la ventana */
+  /* :global porque el elemento vive dentro del componente Robot */
+  :global(.proximamente-robot) {
+    width: clamp(4.5rem, 19svh, 11rem);
+  }
+  .proximamente-etiqueta {
+    margin-top: clamp(0.75rem, 3.5svh, 2.5rem);
+  }
+  .proximamente-titulo {
+    margin-top: clamp(0.5rem, 2svh, 1.25rem);
+    font-size: clamp(1.625rem, min(7vw, 6.2svh), 3rem);
+  }
+  .proximamente-texto {
+    margin-top: clamp(0.5rem, 2svh, 1.25rem);
+    font-size: clamp(0.9375rem, 2.3svh, 1.125rem);
+  }
+  .proximamente-cta {
+    margin-top: clamp(0.875rem, 3.5svh, 2rem);
+  }
+
+  /* Pantallas muy bajas (móvil en horizontal): sin la línea de zonas y con
+     menos margen arriba, para que nada se encime */
+  @media (max-height: 480px) {
+    .proximamente {
+      padding-block: 3.25rem 1rem;
+    }
+    .proximamente-logo {
+      top: 0.75rem;
+    }
+    .proximamente-zonas {
+      display: none;
+    }
+  }
+
   /* Logo: versión negra en claro, blanca en oscuro */
   .logo-oscuro {
     opacity: 0;
