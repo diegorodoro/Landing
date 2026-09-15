@@ -1,0 +1,630 @@
+---
+/*
+  Robot de la marca, dibujado en SVG a partir del isotipo (no usa el PNG):
+  · Ojos  = las dos "o" azules
+  · Nariz = la "l"
+  · Boca  = el corchete
+  Las coordenadas de la cara salen de medir solotu-isotipo.png (recortado a
+  756×542). Se meten en una cabeza con pantalla, orejas y antena.
+
+  Qué hace:
+  · Flota suave y parpadea cada pocos segundos (a veces doble parpadeo).
+  · Sigue el cursor con los ojos e inclina un poco la cabeza. Al leer la
+    Misión mira a la izquierda y al leer la Visión, a la derecha.
+  · Sin cursor (móvil) mira alrededor de vez en cuando.
+  · Al entrar en pantalla saluda; al tocarlo, vuelve a saludar: ojos
+    sonrientes, boca más grande, mejillas y un globo de texto.
+  · Se ENOJA cuando otra parte de la página se lo pide (evento
+    "robot:humor" con detail "enojado" | "normal"): cejas fruncidas, ojos
+    entrecerrados, boca al revés, antena roja, un "no" con la cabeza y algo de
+    humo y llamas. Todo entra por etapas para que se sienta natural.
+  · Con reduced-motion: quieto, sin parpadeo ni seguimiento; el saludo y el
+    enojo solo cambian la expresión.
+*/
+
+interface Props {
+  clase?: string;
+  /** Frases del globo al saludar, en orden. */
+  saludos?: string[];
+}
+const {
+  clase = "",
+  saludos = ["¡Hola!", "¿Hablamos de tu operación?", "Aquí está lo que nos mueve"],
+} = Astro.props;
+
+// Anillo (elipse con hueco) con relleno evenodd
+const anillo = (cx: number, cy: number, rx: number, ry: number, hx: number, hy: number) =>
+  `M${cx - rx},${cy}a${rx},${ry} 0 1,0 ${rx * 2},0a${rx},${ry} 0 1,0 ${-rx * 2},0Z` +
+  `M${cx - hx},${cy}a${hx},${hy} 0 1,0 ${hx * 2},0a${hx},${hy} 0 1,0 ${-hx * 2},0Z`;
+
+const ojoIzq = anillo(145.5, 223.5, 145.5, 132.5, 54, 61);
+const ojoDer = anillo(610, 223.5, 145.5, 132.5, 54, 61);
+
+// Llamas del enojo: base (x) sobre la cabeza, tamaño y retraso del titileo.
+// La llama se dibuja en 110×200 con la base abajo al centro.
+const llamas = [
+  { x: 400, s: 0.7, retraso: 0.3 },
+  { x: 500, s: 1.0, retraso: 0 },
+  { x: 600, s: 0.7, retraso: 0.5 },
+];
+const LLAMA = "M55 200C18 186 0 150 12 108 20 80 38 70 40 44 58 62 62 84 58 100 72 88 78 64 74 30 100 56 112 96 108 130 104 172 86 194 55 200Z";
+const LLAMA_NUCLEO = "M55 196C34 188 26 166 32 142 38 122 50 116 54 96 66 114 70 130 66 146 76 140 80 128 80 116 92 136 94 160 86 178 78 190 68 196 55 196Z";
+
+// Humo: dos bocanadas suaves que suben desde la cabeza
+const humoArriba = [
+  { cx: 330, cy: 180, r: 34, d: 0 },
+  { cx: 670, cy: 180, r: 34, d: 0.6 },
+];
+
+---
+
+<div class:list={["robot relative mx-auto", clase]} data-robot data-saludos={JSON.stringify(saludos)}>
+  {/* Globo de texto: role=status para que el saludo también se anuncie */}
+  <p class="robot-globo" role="status" data-robot-globo></p>
+
+  <button type="button" class="robot-boton block w-full" aria-label="Saludar al robot de Solotu" data-robot-boton>
+    <svg viewBox="0 0 1000 1040" class="block w-full overflow-visible" aria-hidden="true">
+      <defs>
+        {/* Fuego: amarillo en la base, rojo en la punta */}
+        <linearGradient id="robot-fuego" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#fde047" />
+          <stop offset="45%" stop-color="#f97316" />
+          <stop offset="100%" stop-color="#dc2626" />
+        </linearGradient>
+        <radialGradient id="robot-pantalla" cx="40%" cy="30%" r="80%">
+          <stop offset="0%" class="robot-pantalla-luz" />
+          <stop offset="100%" class="robot-pantalla-sombra" />
+        </radialGradient>
+      </defs>
+
+      {/* Sombra en el suelo: se encoge cuando el robot sube */}
+      <ellipse class="robot-sombra" cx="500" cy="1005" rx="270" ry="24" />
+
+      <g class="robot-cuerpo">
+        {/* ENOJO — detrás de la cabeza para que las llamas "salgan" de ella */}
+        <g class="robot-humo" aria-hidden="true">
+          {humoArriba.map((h) => (
+            <circle class="robot-bocanada" cx={h.cx} cy={h.cy} r={h.r} style={`animation-delay:${h.d}s`} />
+          ))}
+        </g>
+        <g class="robot-fuego" aria-hidden="true">
+          {llamas.map((l) => (
+            <g transform={`translate(${l.x - 55 * l.s} ${310 - 200 * l.s}) scale(${l.s})`}>
+              <g class="robot-llama" style={`animation-delay:${l.retraso}s`}>
+                <path d={LLAMA} fill="url(#robot-fuego)" />
+                <path d={LLAMA_NUCLEO} fill="#fef08a" opacity="0.85" />
+              </g>
+            </g>
+          ))}
+        </g>
+        <g class="robot-cabeza">
+          {/* Antena con luz */}
+          <rect class="robot-trazo" x="488" y="118" width="24" height="120" rx="12" />
+          <circle class="robot-antena-halo" cx="500" cy="100" r="42" />
+          <circle class="robot-antena" cx="500" cy="100" r="34" />
+
+          {/* Orejas */}
+          <rect class="robot-oreja" x="58" y="480" width="66" height="190" rx="33" />
+          <rect class="robot-oreja" x="876" y="480" width="66" height="190" rx="33" />
+
+          {/* Cabeza y pantalla */}
+          <rect class="robot-casco" x="110" y="230" width="780" height="680" rx="210" />
+          <rect x="168" y="290" width="664" height="560" rx="165" fill="url(#robot-pantalla)" />
+          <rect class="robot-rubor" x="168" y="290" width="664" height="560" rx="165" />
+
+          {/* Mejillas (solo al saludar) */}
+          <ellipse class="robot-mejilla" cx="258" cy="700" rx="48" ry="26" />
+          <ellipse class="robot-mejilla" cx="742" cy="700" rx="48" ry="26" />
+
+          {/* Cara del isotipo, escalada al 72% y centrada en la pantalla */}
+          <g transform="translate(228 372) scale(0.72)">
+            {/* Cejas: solo aparecen al enojarse, inclinadas hacia la nariz */}
+            <rect class="robot-trazo robot-ceja robot-ceja-izq" x="30" y="10" width="250" height="56" rx="10" />
+            <rect class="robot-trazo robot-ceja robot-ceja-der" x="476" y="10" width="250" height="56" rx="10" />
+            <g class="robot-ojos">
+              <path class="robot-ojo" fill-rule="evenodd" d={ojoIzq} />
+              <path class="robot-ojo" fill-rule="evenodd" d={ojoDer} />
+            </g>
+            <rect class="robot-trazo robot-nariz" x="332" y="0" width="91" height="352" />
+            <path class="robot-trazo robot-boca" d="M105 409H189V459H566V409H650V541H105Z" />
+          </g>
+        </g>
+      </g>
+    </svg>
+  </button>
+</div>
+
+<script>
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  document.querySelectorAll<HTMLElement>("[data-robot]").forEach((robot) => {
+    const boton = robot.querySelector<HTMLButtonElement>("[data-robot-boton]")!;
+    const globo = robot.querySelector<HTMLElement>("[data-robot-globo]")!;
+    const saludos: string[] = JSON.parse(robot.dataset.saludos ?? "[]");
+    const seccion = robot.closest("section") ?? document.body;
+
+    let visible = false;
+    let numSaludo = 0;
+    let temporizadorSaludo: number | undefined;
+    let temporizadorParpadeo: number | undefined;
+    let temporizadorMirar: number | undefined;
+    let ultimoMovimiento = 0;
+
+    // ---------- Mirar hacia un punto ----------
+    // x/y en [-1, 1]: los ojos se desplazan y la cabeza se inclina un poco
+    const mirar = (x: number, y: number) => {
+      robot.style.setProperty("--mirar-x", `${x * 26}px`);
+      robot.style.setProperty("--mirar-y", `${y * 18}px`);
+      robot.style.setProperty("--inclinar", `${x * 5}deg`);
+    };
+
+    // ---------- Saludo ----------
+    const saludar = () => {
+      globo.textContent = saludos[numSaludo++ % saludos.length];
+      robot.classList.remove("is-feliz");
+      void robot.offsetWidth;
+      robot.classList.add("is-feliz");
+      window.clearTimeout(temporizadorSaludo);
+      temporizadorSaludo = window.setTimeout(() => robot.classList.remove("is-feliz"), 2200);
+    };
+    boton.addEventListener("click", saludar);
+
+    // ---------- Humor pedido desde fuera ----------
+    const frasesEnojo = ["¡Eso nunca!", "¡Ni lo pienses!", "¡Jamás!"];
+    let numEnojo = 0;
+    robot.addEventListener("robot:humor", (e) => {
+      const humor = (e as CustomEvent<string>).detail;
+      if (humor === "enojado") {
+        window.clearTimeout(temporizadorSaludo);
+        robot.classList.remove("is-feliz");
+        globo.textContent = frasesEnojo[numEnojo++ % frasesEnojo.length];
+        robot.classList.add("is-enojado");
+      } else {
+        robot.classList.remove("is-enojado");
+      }
+    });
+
+    if (!sinMovimiento) {
+      // ---------- Parpadeo con ritmo irregular ----------
+      const parpadear = () => {
+        if (!visible) return;
+        robot.classList.add("is-parpadeando");
+        window.setTimeout(() => robot.classList.remove("is-parpadeando"), 160);
+        // A veces un doble parpadeo, como hace la gente
+        if (Math.random() < 0.25) {
+          window.setTimeout(() => {
+            robot.classList.add("is-parpadeando");
+            window.setTimeout(() => robot.classList.remove("is-parpadeando"), 140);
+          }, 300);
+        }
+        temporizadorParpadeo = window.setTimeout(parpadear, 2600 + Math.random() * 2800);
+      };
+
+      // ---------- Seguir el cursor ----------
+      let pendiente = false;
+      seccion.addEventListener("pointermove", (e) => {
+        const ev = e as PointerEvent;
+        if (ev.pointerType !== "mouse" || pendiente) return;
+        pendiente = true;
+        requestAnimationFrame(() => {
+          pendiente = false;
+          ultimoMovimiento = performance.now();
+          const r = boton.getBoundingClientRect();
+          const dx = ev.clientX - (r.left + r.width / 2);
+          const dy = ev.clientY - (r.top + r.height / 2);
+          const limitar = (v: number) => Math.max(-1, Math.min(1, v));
+          mirar(limitar(dx / 420), limitar(dy / 320));
+        });
+      });
+      seccion.addEventListener("pointerleave", () => mirar(0, 0));
+
+      // ---------- Sin cursor: mira alrededor de vez en cuando ----------
+      const mirarAlrededor = () => {
+        if (visible && performance.now() - ultimoMovimiento > 3000) {
+          const destinos = [
+            [0, 0],
+            [-0.8, -0.2],
+            [0.8, -0.2],
+            [0, 0.5],
+            [-0.5, 0.3],
+          ];
+          const [x, y] = destinos[Math.floor(Math.random() * destinos.length)];
+          mirar(x, y);
+        }
+        temporizadorMirar = window.setTimeout(mirarAlrededor, 2200 + Math.random() * 1800);
+      };
+
+      new IntersectionObserver(([entrada]) => {
+        visible = entrada.isIntersecting;
+        robot.classList.toggle("is-pausado", !visible);
+        window.clearTimeout(temporizadorParpadeo);
+        window.clearTimeout(temporizadorMirar);
+        if (visible) {
+          temporizadorParpadeo = window.setTimeout(parpadear, 1200);
+          temporizadorMirar = window.setTimeout(mirarAlrededor, 2500);
+        }
+      }).observe(robot);
+    }
+
+    // Saluda la primera vez que aparece en pantalla
+    const alAparecer = new IntersectionObserver(
+      ([entrada]) => {
+        if (!entrada.isIntersecting) return;
+        window.setTimeout(saludar, 500);
+        alAparecer.disconnect();
+      },
+      { threshold: 0.6 },
+    );
+    alAparecer.observe(robot);
+  });
+</script>
+
+<style>
+  .robot {
+    --mirar-x: 0px;
+    --mirar-y: 0px;
+    --inclinar: 0deg;
+  }
+
+  .robot-boton {
+    cursor: pointer;
+    border-radius: 2rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .robot-boton:focus-visible {
+    outline-offset: 8px;
+  }
+
+  /* ---------- Colores: todo sale de tokens, así cambia con el tema ---------- */
+  .robot-casco {
+    fill: var(--color-superficie);
+    stroke: var(--color-ink-100);
+    stroke-width: 10;
+  }
+  .robot-oreja {
+    fill: var(--color-brand-100);
+  }
+  .robot-pantalla-luz {
+    stop-color: var(--color-superficie);
+  }
+  .robot-pantalla-sombra {
+    stop-color: var(--color-brand-50);
+  }
+  .robot-trazo {
+    fill: var(--color-ink-900);
+  }
+  .robot-ojo,
+  .robot-antena {
+    fill: var(--color-acento);
+  }
+  .robot-antena-halo {
+    fill: var(--color-acento);
+    opacity: 0.25;
+  }
+  .robot-mejilla {
+    fill: var(--color-acento);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .robot-sombra {
+    fill: var(--color-ink-900);
+    opacity: 0.08;
+  }
+  .robot-bocanada {
+    fill: var(--color-ink-300);
+    opacity: 0;
+  }
+
+  /* ---------- Transformaciones (origen en el propio elemento) ---------- */
+  .robot-cuerpo,
+  .robot-cabeza,
+  .robot-ojos,
+  .robot-ojo,
+  .robot-boca,
+  .robot-ceja,
+  .robot-bocanada,
+  .robot-sombra,
+  .robot-antena,
+  .robot-antena-halo {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Flotar */
+  .robot-cuerpo {
+    animation: robot-flotar 4.5s ease-in-out infinite;
+  }
+  .robot-sombra {
+    animation: robot-sombra 4.5s ease-in-out infinite;
+  }
+  @keyframes robot-flotar {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -26px;
+    }
+  }
+  @keyframes robot-sombra {
+    0%,
+    100% {
+      scale: 1;
+      opacity: 0.08;
+    }
+    50% {
+      scale: 0.82;
+      opacity: 0.05;
+    }
+  }
+
+  /* Luz de la antena */
+  .robot-antena-halo {
+    animation: robot-antena 2.4s ease-in-out infinite;
+  }
+  @keyframes robot-antena {
+    0%,
+    100% {
+      scale: 1;
+      opacity: 0.25;
+    }
+    50% {
+      scale: 1.7;
+      opacity: 0;
+    }
+  }
+
+  /* Mirar e inclinar la cabeza (origen abajo para que "asienta") */
+  .robot-cabeza {
+    transform-origin: 50% 90%;
+    rotate: var(--inclinar);
+    transition: rotate 0.6s var(--ease-out-soft);
+  }
+  .robot-ojos {
+    translate: var(--mirar-x) var(--mirar-y);
+    transition: translate 0.35s var(--ease-out-soft);
+  }
+
+  /* Parpadeo */
+  .robot-ojo {
+    transition: scale 0.12s ease-in-out;
+  }
+  .robot.is-parpadeando .robot-ojo {
+    scale: 1 0.08;
+  }
+
+  /* ---------- Saludo ---------- */
+  .robot-boca {
+    transition: scale 0.35s var(--ease-out-soft);
+  }
+  .robot.is-feliz .robot-ojo {
+    /* Ojos entrecerrados: sonrisa con la mirada */
+    scale: 1 0.55;
+  }
+  .robot.is-feliz .robot-boca {
+    scale: 1.15 1.35;
+  }
+  .robot.is-feliz .robot-mejilla {
+    opacity: 0.35;
+  }
+  .robot.is-feliz .robot-cabeza {
+    animation: robot-saludo 0.9s var(--ease-out-soft);
+  }
+  @keyframes robot-saludo {
+    0% {
+      rotate: var(--inclinar);
+    }
+    25% {
+      rotate: -9deg;
+    }
+    50% {
+      rotate: 7deg;
+    }
+    75% {
+      rotate: -4deg;
+    }
+    100% {
+      rotate: var(--inclinar);
+    }
+  }
+
+  /* Globo de texto */
+  .robot-globo {
+    position: absolute;
+    bottom: calc(100% - 0.5rem);
+    left: 50%;
+    z-index: 2;
+    translate: -50% 8px;
+    scale: 0.9;
+    opacity: 0;
+    padding: 0.5rem 0.875rem;
+    border-radius: 1rem;
+    background: var(--color-accion);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    transition:
+      opacity 0.3s var(--ease-out-soft),
+      translate 0.4s var(--ease-out-soft),
+      scale 0.4s var(--ease-out-soft);
+  }
+  /* Piquito del globo */
+  .robot-globo::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    translate: -50% -1px;
+    border: 7px solid transparent;
+    border-top-color: var(--color-accion);
+  }
+  .robot.is-feliz .robot-globo {
+    opacity: 1;
+    translate: -50% 0;
+    scale: 1;
+  }
+
+  /* ---------- Enojo ----------
+     Natural = por etapas, no de golpe. Al entrar:
+       0ms cejas · 80ms ojos · 160ms boca · 250ms antena y rubor ·
+       400ms humo y llamas.
+     Al salir todo vuelve con transiciones suaves. */
+  .robot-ceja {
+    opacity: 0;
+    translate: 0 30px;
+    transition:
+      opacity 0.35s var(--ease-out-soft),
+      translate 0.5s var(--ease-out-soft),
+      rotate 0.5s var(--ease-out-soft);
+  }
+  .robot.is-enojado .robot-ceja {
+    opacity: 1;
+    translate: 0 0;
+  }
+  /* Extremo interior (junto a la nariz) hacia abajo: ceño fruncido */
+  .robot.is-enojado .robot-ceja-izq {
+    rotate: 13deg;
+  }
+  .robot.is-enojado .robot-ceja-der {
+    rotate: -13deg;
+  }
+
+  .robot-ojo {
+    transition:
+      scale 0.12s ease-in-out,
+      translate 0.45s var(--ease-out-soft);
+  }
+  .robot.is-enojado .robot-ojo {
+    scale: 1 0.68;
+    translate: 0 14px;
+    transition:
+      scale 0.45s var(--ease-out-soft) 80ms,
+      translate 0.45s var(--ease-out-soft) 80ms;
+  }
+
+  /* Boca al revés: el corchete se abre hacia abajo */
+  .robot.is-enojado .robot-boca {
+    scale: 1 -1;
+    transition: scale 0.5s var(--ease-out-soft) 160ms;
+  }
+
+  .robot-antena,
+  .robot-antena-halo,
+  .robot-mejilla,
+  .robot-rubor {
+    transition:
+      fill 0.5s,
+      opacity 0.6s;
+  }
+  .robot.is-enojado :is(.robot-antena, .robot-antena-halo, .robot-mejilla, .robot-rubor) {
+    transition-delay: 250ms;
+  }
+  .robot.is-enojado .robot-antena,
+  .robot.is-enojado .robot-antena-halo,
+  .robot.is-enojado .robot-mejilla {
+    fill: #ef4444;
+  }
+  .robot.is-enojado .robot-mejilla {
+    opacity: 0.22;
+  }
+  .robot-rubor {
+    fill: #ef4444;
+    opacity: 0;
+  }
+  .robot.is-enojado .robot-rubor {
+    opacity: 0.05;
+  }
+
+  /* Un "no" con la cabeza, corto y suave */
+  .robot.is-enojado .robot-cabeza {
+    animation: robot-no 0.8s var(--ease-out-soft) 1;
+  }
+  @keyframes robot-no {
+    0%,
+    100% {
+      rotate: var(--inclinar);
+    }
+    30% {
+      rotate: -3.5deg;
+    }
+    65% {
+      rotate: 3deg;
+    }
+  }
+
+  /* Humo: sube despacio y se disipa */
+  .robot.is-enojado .robot-bocanada {
+    animation: robot-humo 2.6s ease-out infinite;
+  }
+  @keyframes robot-humo {
+    0% {
+      opacity: 0;
+      translate: 0 30px;
+      scale: 0.5;
+    }
+    20% {
+      opacity: 0.28;
+    }
+    100% {
+      opacity: 0;
+      translate: 0 -110px;
+      scale: 1.35;
+    }
+  }
+
+  /* Llamas: crecen poco a poco desde la base y ondulan con calma */
+  .robot-llama {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    opacity: 0;
+    scale: 1 0;
+    transition:
+      opacity 0.4s,
+      scale 0.5s var(--ease-out-soft);
+  }
+  .robot.is-enojado .robot-llama {
+    opacity: 0.9;
+    scale: 1 1;
+    transition-delay: 400ms;
+    animation: robot-llama 1.1s ease-in-out infinite alternate;
+  }
+  @keyframes robot-llama {
+    0% {
+      transform: skewX(-2deg) scaleY(0.97);
+    }
+    100% {
+      transform: skewX(2deg) scaleY(1.04);
+    }
+  }
+
+  .robot.is-enojado .robot-globo {
+    opacity: 1;
+    /* Algo más arriba que el saludo: deja ver las llamas */
+    translate: -50% -1.75rem;
+    scale: 1;
+    background: #dc2626; /* blanco encima: 4.83:1 */
+  }
+  .robot.is-enojado .robot-globo::after {
+    border-top-color: #dc2626;
+  }
+
+  .robot.is-pausado .robot-cuerpo,
+  .robot.is-pausado .robot-sombra,
+  .robot.is-pausado .robot-antena-halo {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .robot-cuerpo,
+    .robot-sombra,
+    .robot-antena-halo,
+    .robot.is-feliz .robot-cabeza,
+    .robot.is-enojado .robot-cabeza,
+    .robot.is-enojado .robot-llama,
+    .robot.is-enojado .robot-bocanada {
+      animation: none;
+    }
+  }
+</style>

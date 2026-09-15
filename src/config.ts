@@ -44,7 +44,19 @@ export const nav = [
 export const hero = {
   eyebrow: "Agencia de Inteligencia Artificial",
   titulo: "IA que resuelve la operación de tu empresa,",
-  tituloAcento: "no una presentación bonita.",
+  tituloAcento: "hecha",
+  // Fortalezas que rotan en la tarjeta tras "hecha". La primera es la que
+  // leen los lectores de pantalla y la que se ve sin JavaScript.
+  // Cortas a propósito (≤ 17 caracteres): la tarjeta no parte renglón y
+  // tiene que caber en un móvil de 360px (en móvil la letra de la tarjeta
+  // se ajusta al ancho de pantalla, ver .rotador en Hero.astro).
+  tituloRotativo: [
+    "a la medida", // 100% a la medida de tu operación
+    "en semanas", // primer piloto en 2–4 semanas
+    "y probada en casa", // la usamos primero en nuestras empresas
+    "sin amarrarte", // no vendemos plataforma: la herramienta según el caso
+    "para que sea tuya", // te capacitamos para que seas dueño de tu IA
+  ],
   bajada:
     "Desarrollamos soluciones de Inteligencia Artificial personalizadas para PyMEs mexicanas. Empezamos con un diagnóstico, seguimos con un piloto en semanas y te dejamos a ti al mando.",
   datos: [
@@ -75,9 +87,15 @@ export const diferenciadores = [
   },
 ] as const;
 
+// En la sección de Servicios (red neuronal) solo se ven `nombre`, `icono`,
+// `corto` y `duracionCorta`: la gente no se detiene a leer párrafos.
+// `resumen` queda como referencia para otras páginas o para ventas.
 export const servicios = [
   {
     nombre: "Diagnóstico IA",
+    icono: "lupa" as const,
+    corto: "Detectamos dónde la IA te ahorra más",
+    duracionCorta: "1 semana",
     resumen:
       "Sesión de 90 minutos y un reporte con tres oportunidades priorizadas y un piloto propuesto con alcance.",
     duracion: "Entrega en 1 semana",
@@ -86,6 +104,9 @@ export const servicios = [
   },
   {
     nombre: "Piloto / Quick win",
+    icono: "rayo" as const,
+    corto: "Tu problema #1, resuelto y medible",
+    duracionCorta: "2–4 semanas",
     resumen:
       "Una automatización, dashboard o agente acotado que ataca tu dolor número uno. Resultado medible, no una demo.",
     duracion: "2 a 4 semanas",
@@ -94,6 +115,9 @@ export const servicios = [
   },
   {
     nombre: "Solución completa",
+    icono: "capas" as const,
+    corto: "Escalamos lo que ya funcionó",
+    duracionCorta: "6–12 semanas",
     resumen:
       "Cotizador, agente de atención, sistema de datos con dashboard o integración entre tus herramientas actuales.",
     duracion: "6 a 12 semanas",
@@ -102,6 +126,9 @@ export const servicios = [
   },
   {
     nombre: "Taller de IA práctica",
+    icono: "libro" as const,
+    corto: "Tu equipo usando IA en su trabajo real",
+    duracionCorta: "4 horas",
     resumen:
       "Cuatro horas, presencial o en línea, hasta 15 personas, trabajando con casos reales de tu empresa.",
     duracion: "Fecha fija",
@@ -109,6 +136,9 @@ export const servicios = [
   },
   {
     nombre: "Seguimiento mensual",
+    icono: "pulso" as const,
+    corto: "Soporte y mejoras sin parar",
+    duracionCorta: "Mensual",
     resumen:
       "Soporte, mejoras, monitoreo de lo que ya está en producción y horas de consultoría cuando las necesites.",
     duracion: "Mensual",
@@ -171,6 +201,10 @@ export const proposito = {
     "Ayudar a nuestros clientes con soluciones personalizadas de alto valor que optimicen la operación y los procesos de sus empresas.",
   vision:
     "Ser una empresa de tecnología e innovación líder en soluciones personalizadas B2B desarrolladas con IA.",
+  // Fragmentos que se resaltan en azul con marcador. Deben aparecer tal cual
+  // dentro de `mision` y `vision`.
+  misionDestacado: "soluciones personalizadas de alto valor",
+  visionDestacado: "líder en soluciones personalizadas B2B",
   // Lo que NO hacemos. Es un diferenciador real, no relleno.
   compromisos: [
     "No elevamos la dificultad de operación de nuestros clientes.",

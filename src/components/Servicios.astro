@@ -1,17 +1,73 @@
 ---
 import { servicios } from "../config";
+import Icono from "./Icono.astro";
 
-// Escala común para las barras: el compromiso más largo del catálogo.
-const TOPE = Math.max(...servicios.map((s) => ("semanas" in s ? s.semanas![1] : 0)));
+/*
+  Posición de cada neurona en la constelación, en % del contenedor.
+  x/y = desde sm (lienzo 4:3 y 2:1) · mx/my = móvil (lienzo 2:3, vertical).
+  El orden coincide con `servicios` en config.ts. Es composición visual:
+  el flujo va de izquierda a derecha (arriba a abajo en móvil) pero con
+  alturas irregulares para que no parezca una tabla.
+*/
+const posiciones = [
+  { x: 10, y: 50, mx: 50, my: 9 }, // Diagnóstico
+  { x: 36, y: 22, mx: 24, my: 33 }, // Piloto
+  { x: 63, y: 50, mx: 42, my: 65 }, // Solución completa
+  { x: 38, y: 80, mx: 77, my: 45 }, // Taller
+  { x: 89, y: 28, mx: 70, my: 89 }, // Seguimiento
+];
+
+// Neuronas pequeñas decorativas: rellenan la red entre los servicios.
+const ocultas = [
+  { x: 20, y: 28, mx: 14, my: 18 },
+  { x: 22, y: 70, mx: 86, my: 14 },
+  { x: 25, y: 48, mx: 62, my: 23 },
+  { x: 15, y: 88, mx: 8, my: 49 },
+  { x: 27, y: 9, mx: 93, my: 62 },
+  { x: 49, y: 36, mx: 50, my: 45 },
+  { x: 51, y: 64, mx: 20, my: 57 },
+  { x: 49, y: 92, mx: 90, my: 29 },
+  { x: 55, y: 11, mx: 62, my: 79 },
+  { x: 75, y: 70, mx: 16, my: 81 },
+  { x: 75, y: 16, mx: 34, my: 95 },
+  { x: 79, y: 49, mx: 92, my: 96 },
+  { x: 95, y: 60, mx: 10, my: 33 },
+  { x: 70, y: 90, mx: 72, my: 58 },
+  { x: 96, y: 9, mx: 30, my: 45 },
+  { x: 60, y: 29, mx: 54, my: 99 },
+  { x: 88, y: 84, mx: 84, my: 75 },
+  { x: 4, y: 20, mx: 38, my: 20 },
+];
+
+// Conexiones "troncales" entre servicios (además de las automáticas):
+// dibujan el recorrido Diagnóstico → Piloto/Taller → Solución → Seguimiento.
+const troncales = [
+  [0, 1],
+  [0, 3],
+  [1, 2],
+  [3, 2],
+  [2, 4],
+];
+
+const inicial = servicios[0];
+const estilo = (p: { x: number; y: number; mx: number; my: number }) =>
+  `--x:${p.x}%;--y:${p.y}%;--mx:${p.mx}%;--my:${p.my}%`;
 ---
 
 {/*
-  Antes eran 5 tarjetas con borde en una grilla de 3 columnas: mucho alto y
-  mucho ruido visual para información que se consulta de un barrido.
-  layout.md › Best practices: "Make essential information easy to find by
-  giving it sufficient space... don't obscure it by crowding it with
-  nonessential details." Ahora es una lista dividida: nombre, qué es y
-  duración alineados en columnas, que es como se comparan servicios.
+  Servicios como red neuronal. Recurso VISUAL, no diagrama técnico.
+
+  · Cada servicio es una neurona (círculo con icono y nombre). Nada de
+    párrafos: el detalle corto aparece en el panel al señalar una neurona.
+  · Al pasar el cursor (o tocar, o enfocar con teclado) la neurona DISPARA:
+    ondas desde el núcleo, impulsos que viajan a sus vecinas y se propagan
+    por la red en oleadas.
+  · Mientras nadie interactúa, la red dispara sola recorriendo los servicios
+    en orden, para que se entienda que se puede tocar.
+  · Accesibilidad: las neuronas son botones en orden de lectura; el panel es
+    una región aria-live que anuncia el servicio elegido. Las líneas y las
+    neuronas pequeñas son aria-hidden. Con reduced-motion no hay impulsos,
+    ondas ni recorrido automático: solo cambia el panel.
 */}
 <section id="servicios" class="flex min-h-svh items-center border-t border-ink-100 py-20 sm:py-24">
   <div class="mx-auto w-full max-w-6xl px-6">
@@ -20,67 +76,603 @@ const TOPE = Math.max(...servicios.map((s) => ("semanas" in s ? s.semanas![1] : 
       <h2 class="mt-4 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
         Del diagnóstico a que tu equipo lo opere solo
       </h2>
-      <p class="mt-5 text-lg leading-relaxed text-ink-500">
-        Empezamos pequeño y acotado a propósito. Primero demostramos valor con un piloto y solo
-        después construimos la solución completa.
+      <p class="mt-4 text-lg leading-relaxed text-ink-500">
+        Empezamos pequeño: primero un piloto que demuestre valor.
       </p>
     </div>
 
-    <ul class="mt-12 border-t border-ink-100">
+    {/* Red y panel lado a lado en escritorio (el panel nunca tapa la red y
+        queda a la altura de la vista); apilados en móvil y tablet. */}
+    <div class="mt-12 grid items-center gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-10" data-reveal>
+    <div
+      class="red relative aspect-2/3 w-full sm:aspect-4/3 lg:aspect-3/2"
+      data-red
+      data-troncales={JSON.stringify(troncales)}
+    >
+      <svg class="pointer-events-none absolute inset-0 h-full w-full overflow-visible" data-red-svg aria-hidden="true"></svg>
+      {/* Chispas: puntos HTML que viajan con transform (GPU), no trazos SVG */}
+      <div class="red-capa red-capa-ambiente" data-red-ambiente aria-hidden="true"></div>
+      <div class="red-capa" data-red-impulsos aria-hidden="true"></div>
+
       {
-        servicios.map((servicio, i) => (
-          <li
-            data-reveal
-            style={`--d: ${i * 60}ms`}
-            class:list={[
-              "group border-b border-ink-100 transition-colors",
-              servicio.destacado ? "bg-ink-50/60" : "hover:bg-ink-50/60",
-            ]}
-          >
-            <div class="grid gap-x-8 gap-y-2 px-4 py-6 sm:grid-cols-[minmax(0,15rem)_1fr] sm:px-6 lg:grid-cols-[minmax(0,15rem)_1fr_minmax(0,11rem)]">
-              <div>
-                <h3 class="text-lg font-semibold tracking-tight">{servicio.nombre}</h3>
-                {servicio.destacado && (
-                  <span class="mt-2 inline-block rounded-full bg-ink-900 px-2.5 py-0.5 text-xs font-medium text-white">
-                    Empieza aquí
-                  </span>
-                )}
-              </div>
-
-              <p class="leading-relaxed text-ink-500">{servicio.resumen}</p>
-
-              <div class="lg:text-right">
-                <p class="text-sm tabular-nums text-ink-700">{servicio.duracion}</p>
-
-                {/*
-                  Barra de duración a escala común (tope: {TOPE} semanas), para
-                  comparar de un barrido cuánto dura cada compromiso. Solo se
-                  dibuja donde hay un rango real: "fecha fija" y "mensual" no
-                  tienen semanas y no se les inventa una.
-                  motion.md › Best practices: "Aim for brevity and precision".
-                */}
-                {"semanas" in servicio && servicio.semanas && (
-                  <div
-                    class="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-ink-100"
-                    role="img"
-                    aria-label={`Duración: ${servicio.duracion}, sobre una escala de ${TOPE} semanas`}
-                  >
-                    <div
-                      class="h-full rounded-full bg-ink-900 transition-[margin,width] duration-700 ease-out"
-                      style={`margin-left:${((servicio.semanas[0] - 1) / TOPE) * 100}%;width:${((servicio.semanas[1] - servicio.semanas[0] + 1) / TOPE) * 100}%`}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </li>
+        ocultas.map((p, i) => (
+          <span
+            class="red-oculta"
+            data-nodo
+            aria-hidden="true"
+            style={`${estilo(p)};--parpadeo:${-((i * 0.73) % 4)}s`}
+          />
         ))
       }
-    </ul>
 
-    <p class="mt-8 max-w-2xl text-sm text-ink-500" data-reveal>
-      El alcance y el precio de cada proyecto se cierran después del diagnóstico, cuando ya sabemos
-      qué necesitas.
-    </p>
+      {
+        servicios.map((servicio, i) => (
+          <button
+            type="button"
+            class:list={["neurona", { "is-destacada": servicio.destacado, "is-actual": i === 0 }]}
+            style={estilo(posiciones[i])}
+            data-nodo
+            data-neurona={i}
+            data-nombre={servicio.nombre}
+            data-corto={servicio.corto}
+            data-duracion={servicio.duracionCorta}
+            data-destacado={servicio.destacado ? "" : undefined}
+            aria-controls="red-detalle"
+            aria-current={i === 0 ? "true" : undefined}
+          >
+            <span class="neurona-onda" aria-hidden="true" />
+            <span class="neurona-onda" aria-hidden="true" />
+            <span class="neurona-nucleo">
+              <Icono nombre={servicio.icono} clase="neurona-icono" />
+            </span>
+            <span class="neurona-nombre">{servicio.nombre}</span>
+          </button>
+        ))
+      }
+    </div>
+
+      {/* Panel de detalle, fijo junto a la red */}
+      <div
+        id="red-detalle"
+        class="rounded-2xl border border-ink-100 bg-superficie p-5"
+        aria-live="polite"
+        data-detalle-panel
+      >
+        <div data-detalle>
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-xs font-medium uppercase tracking-widest text-acento" data-detalle-etiqueta>
+              {inicial.destacado ? "Empieza aquí" : "Servicio"}
+            </p>
+            <p class="rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-ink-700" data-detalle-duracion>
+              {inicial.duracionCorta}
+            </p>
+          </div>
+          <h3 class="mt-1.5 text-lg font-semibold tracking-tight" data-detalle-nombre>{inicial.nombre}</h3>
+          <p class="mt-0.5 text-sm text-ink-500" data-detalle-corto>{inicial.corto}</p>
+        </div>
+        <p class="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-500">
+          Pasa el cursor o toca una neurona
+        </p>
+      </div>
+    </div>
   </div>
 </section>
+
+
+<script>
+  /*
+    Red neuronal — rendimiento.
+
+    Todo lo que se mueve anima SOLO transform y opacity con Web Animations,
+    que el navegador ejecuta en el compositor (GPU) sin repintar:
+    · Chispas: puntos HTML que recorren la curva con keyframes de translate
+      muestreados sobre la Bézier. Antes eran trazos SVG con
+      stroke-dashoffset, que obligan a repintar todo el SVG en cada frame, y
+      los del disparo además llevaban filter: drop-shadow.
+    · Destellos, latido y ondas: scale + opacity. Antes animaban box-shadow.
+    · Reinicio de animaciones con element.animate(): sin forzar reflow.
+    · Límite de impulsos por salto y de chispas de fondo.
+    · Redibujado agrupado en un frame y solo si cambió el tamaño.
+    · Todo en pausa fuera de pantalla.
+  */
+  const NS = "http://www.w3.org/2000/svg";
+  const red = document.querySelector<HTMLElement>("[data-red]");
+  const svg = document.querySelector<SVGSVGElement>("[data-red-svg]");
+  const capaAmbiente = document.querySelector<HTMLElement>("[data-red-ambiente]");
+  const capaImpulsos = document.querySelector<HTMLElement>("[data-red-impulsos]");
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  type Punto = { x: number; y: number };
+  type Curva = { a: Punto; c: Punto; b: Punto };
+
+  const SUAVE = "cubic-bezier(0.16, 1, 0.3, 1)";
+  const MUESTRAS = 12; // puntos por curva: suficiente para que el trayecto se vea curvo
+  const MAX_AMBIENTE = 12; // chispas de fondo simultáneas
+  const TOPE_POR_SALTO = [Infinity, 8, 6]; // impulsos del disparo por oleada
+
+  const LATIDO: Keyframe[] = [
+    { transform: "scale(1)" },
+    { transform: "scale(1.28)", offset: 0.25 },
+    { transform: "scale(0.96)", offset: 0.6 },
+    { transform: "scale(1)" },
+  ];
+  const ONDA: Keyframe[] = [
+    { transform: "scale(1)", opacity: 0.7 },
+    { transform: "scale(2.4)", opacity: 0 },
+  ];
+  const DESTELLO_OCULTA: Keyframe[] = [
+    { transform: "scale(1)", opacity: 0.45 },
+    { transform: "scale(2.2)", opacity: 1, offset: 0.3 },
+    { transform: "scale(1)", opacity: 0.45 },
+  ];
+  const DESTELLO_NEURONA: Keyframe[] = [
+    { transform: "scale(1)" },
+    { transform: "scale(1.12)", offset: 0.35 },
+    { transform: "scale(1)" },
+  ];
+
+  if (red && svg && capaAmbiente && capaImpulsos) {
+    const nodos = [...red.querySelectorAll<HTMLElement>("[data-nodo]")];
+    const neuronas = [...red.querySelectorAll<HTMLButtonElement>("[data-neurona]")];
+    const troncales: [number, number][] = JSON.parse(red.dataset.troncales ?? "[]");
+    // Las neuronas de servicio van en el DOM después de las ocultas
+    const base = nodos.length - neuronas.length;
+
+    let vecinos: Set<number>[] = [];
+    let lineas = new Map<string, SVGPathElement>();
+    let curvas = new Map<string, Curva>();
+    let ambiente: Animation[] = [];
+    let visible = false;
+
+    const clave = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+
+    // Punto de control desplazado en perpendicular: curvas orgánicas
+    const control = (a: Punto, b: Punto, i: number): Punto => {
+      const k = ((i % 5) - 2) * 0.06;
+      return { x: (a.x + b.x) / 2 - (b.y - a.y) * k, y: (a.y + b.y) / 2 + (b.x - a.x) * k };
+    };
+
+    const enCurva = ({ a, c, b }: Curva, t: number): Punto => {
+      const u = 1 - t;
+      return { x: u * u * a.x + 2 * u * t * c.x + t * t * b.x, y: u * u * a.y + 2 * u * t * c.y + t * t * b.y };
+    };
+
+    // Keyframes de translate sobre la curva; aparece y desaparece en los extremos
+    const trayecto = (curva: Curva, alReves: boolean): Keyframe[] =>
+      Array.from({ length: MUESTRAS + 1 }, (_, i) => {
+        const t = i / MUESTRAS;
+        const p = enCurva(curva, alReves ? 1 - t : t);
+        return {
+          transform: `translate(${p.x}px, ${p.y}px)`,
+          opacity: i === 0 || i === MUESTRAS ? 0 : 1,
+          offset: t,
+        };
+      });
+
+    const chispa = (capa: HTMLElement, clase: string) => {
+      const el = document.createElement("span");
+      el.className = clase;
+      capa.append(el);
+      return el;
+    };
+
+    // ---------- Trazado de la red ----------
+    const trazar = () => {
+      const caja = red.getBoundingClientRect();
+      const centros: Punto[] = nodos.map((n) => {
+        const r = n.getBoundingClientRect();
+        return { x: r.left - caja.left + r.width / 2, y: r.top - caja.top + r.height / 2 };
+      });
+
+      // Aristas: cada nodo con sus 3 vecinos más cercanos + las troncales
+      const aristas = new Set<string>();
+      centros.forEach((c, i) => {
+        centros
+          .map((o, j) => ({ j, d: Math.hypot(o.x - c.x, o.y - c.y) }))
+          .filter((o) => o.j !== i)
+          .sort((p, q) => p.d - q.d)
+          .slice(0, 3)
+          .forEach((o) => aristas.add(clave(i, o.j)));
+      });
+      troncales.forEach(([a, b]) => aristas.add(clave(base + a, base + b)));
+
+      ambiente.forEach((anim) => anim.cancel());
+      ambiente = [];
+      capaAmbiente.replaceChildren();
+      lineas = new Map();
+      curvas = new Map();
+      vecinos = nodos.map(() => new Set<number>());
+
+      const fragmento = document.createDocumentFragment();
+      let n = 0;
+      for (const k of aristas) {
+        const [a, b] = k.split("-").map(Number);
+        vecinos[a].add(b);
+        vecinos[b].add(a);
+
+        const curva = { a: centros[a], c: control(centros[a], centros[b], n), b: centros[b] };
+        curvas.set(k, curva);
+
+        const linea = document.createElementNS(NS, "path");
+        linea.setAttribute("d", `M${curva.a.x},${curva.a.y}Q${curva.c.x},${curva.c.y} ${curva.b.x},${curva.b.y}`);
+        linea.setAttribute("class", a >= base && b >= base ? "red-linea is-troncal" : "red-linea");
+        fragmento.append(linea);
+        lineas.set(k, linea);
+
+        // Actividad de fondo en una de cada cuatro líneas, con tope
+        if (!sinMovimiento && n % 4 === 0 && ambiente.length < MAX_AMBIENTE) {
+          const anim = chispa(capaAmbiente, "red-chispa").animate(trayecto(curva, n % 8 === 4), {
+            duration: 2800 + ((n * 37) % 25) * 100,
+            delay: -((n * 53) % 40) * 100, // empiezan a mitad de camino, no todas a la vez
+            iterations: Infinity,
+          });
+          if (!visible) anim.pause();
+          ambiente.push(anim);
+        }
+        n++;
+      }
+      svg.replaceChildren(fragmento);
+    };
+
+    // Redibujar como mucho una vez por frame y solo si cambió el tamaño
+    let marco = 0;
+    let tamano = "";
+    const programarTrazado = () => {
+      cancelAnimationFrame(marco);
+      marco = requestAnimationFrame(() => {
+        const r = red.getBoundingClientRect();
+        const nuevo = `${Math.round(r.width)}x${Math.round(r.height)}`;
+        if (nuevo === tamano) return;
+        tamano = nuevo;
+        trazar();
+      });
+    };
+
+    // ---------- Panel ----------
+    const panel = document.querySelector<HTMLElement>("[data-detalle]");
+    const pintarDetalle = (neurona: HTMLButtonElement) => {
+      if (!panel) return;
+      panel.querySelector("[data-detalle-nombre]")!.textContent = neurona.dataset.nombre ?? "";
+      panel.querySelector("[data-detalle-corto]")!.textContent = neurona.dataset.corto ?? "";
+      panel.querySelector("[data-detalle-duracion]")!.textContent = neurona.dataset.duracion ?? "";
+      panel.querySelector("[data-detalle-etiqueta]")!.textContent =
+        "destacado" in neurona.dataset ? "Empieza aquí" : "Servicio";
+      if (!sinMovimiento) {
+        panel.animate(
+          [
+            { opacity: 0, transform: "translateY(8px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          { duration: 400, easing: SUAVE },
+        );
+      }
+    };
+
+    // ---------- Disparo ----------
+    let lineasActivas: SVGPathElement[] = [];
+    let apagarLineas: number | undefined;
+    let ultima: HTMLButtonElement | null = null;
+
+    const excitar = (i: number, retraso: number) => {
+      const opciones = { duration: 700, delay: retraso, easing: SUAVE };
+      if (i >= base) nodos[i].querySelector(".neurona-nucleo")?.animate(DESTELLO_NEURONA, opciones);
+      else nodos[i].animate(DESTELLO_OCULTA, opciones);
+    };
+
+    const impulso = (desde: number, hasta: number, retraso: number) => {
+      const k = clave(desde, hasta);
+      const curva = curvas.get(k);
+      if (!curva) return;
+      const el = chispa(capaImpulsos, "red-chispa is-impulso");
+      el.animate(trayecto(curva, desde > hasta), {
+        duration: 520,
+        delay: retraso,
+        easing: "cubic-bezier(0.4, 0, 0.6, 1)",
+        fill: "backwards", // invisible (opacity 0) mientras espera su turno
+      });
+      // Se retira al terminar. Temporizador y no `finished`: si la pestaña
+      // pasa a segundo plano la animación se congela y el nodo quedaría vivo.
+      window.setTimeout(() => el.remove(), retraso + 600);
+      lineasActivas.push(lineas.get(k)!);
+    };
+
+    // La neurona late y emite ondas; la señal se propaga en oleadas
+    // (búsqueda en anchura, 3 saltos, 130ms entre saltos).
+    const disparar = (neurona: HTMLButtonElement) => {
+      neuronas.forEach((n) => {
+        n.classList.toggle("is-actual", n === neurona);
+        if (n === neurona) n.setAttribute("aria-current", "true");
+        else n.removeAttribute("aria-current");
+      });
+      if (neurona !== ultima) pintarDetalle(neurona);
+      ultima = neurona;
+      if (sinMovimiento) return;
+
+      neurona.querySelector(".neurona-nucleo")?.animate(LATIDO, { duration: 600, easing: SUAVE });
+      neurona.querySelectorAll(".neurona-onda").forEach((onda, i) =>
+        onda.animate(ONDA, { duration: 900, delay: i * 180, easing: SUAVE }),
+      );
+
+      // Apaga las líneas del disparo anterior antes de encender las nuevas
+      window.clearTimeout(apagarLineas);
+      lineasActivas.forEach((l) => l.classList.remove("is-activa"));
+      lineasActivas = [];
+
+      const origen = nodos.indexOf(neurona);
+      const visto = new Set([origen]);
+      let frente = [origen];
+      for (let salto = 0; salto < TOPE_POR_SALTO.length; salto++) {
+        const siguiente: number[] = [];
+        const retraso = salto * 130;
+        recorrer: for (const a of frente) {
+          for (const b of vecinos[a]) {
+            if (visto.has(b)) continue;
+            if (siguiente.length >= TOPE_POR_SALTO[salto]) break recorrer;
+            visto.add(b);
+            siguiente.push(b);
+            impulso(a, b, retraso);
+            excitar(b, retraso + 380);
+          }
+        }
+        frente = siguiente;
+      }
+
+      lineasActivas.forEach((l) => l.classList.add("is-activa"));
+      apagarLineas = window.setTimeout(() => {
+        lineasActivas.forEach((l) => l.classList.remove("is-activa"));
+        lineasActivas = [];
+      }, 1300);
+    };
+
+    // ---------- Recorrido automático mientras nadie interactúa ----------
+    const recorrido = [0, 1, 3, 2, 4];
+    let paso = 1;
+    let automatico: number | undefined;
+    let tocado = false;
+
+    const detenerAuto = () => {
+      window.clearInterval(automatico);
+      automatico = undefined;
+    };
+    const iniciarAuto = () => {
+      if (sinMovimiento || tocado || !visible || automatico) return;
+      automatico = window.setInterval(() => {
+        if (!document.hidden) disparar(neuronas[recorrido[paso++ % recorrido.length]]);
+      }, 3200);
+    };
+
+    neuronas.forEach((neurona) => {
+      const activar = () => {
+        tocado = true;
+        detenerAuto();
+        red.classList.add("red-enfocada");
+        disparar(neurona);
+      };
+      neurona.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "mouse") activar();
+      });
+      neurona.addEventListener("click", activar); // toque y teclado (Enter / Espacio)
+      neurona.addEventListener("focus", () => red.classList.add("red-enfocada"));
+      neurona.addEventListener("blur", () => red.classList.remove("red-enfocada"));
+    });
+    red.addEventListener("pointerleave", () => red.classList.remove("red-enfocada"));
+
+    programarTrazado();
+    new ResizeObserver(programarTrazado).observe(red);
+
+    new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      red.classList.toggle("red-pausada", !visible);
+      ambiente.forEach((anim) => (visible ? anim.play() : anim.pause()));
+      if (visible) iniciarAuto();
+      else detenerAuto();
+    }).observe(red);
+  }
+</script>
+
+<style>
+  /* ---------- Posición: móvil (mx/my) y desde sm (x/y) ---------- */
+  .neurona,
+  .red-oculta {
+    position: absolute;
+    left: var(--mx);
+    top: var(--my);
+    translate: -50% -50%;
+  }
+  @media (min-width: 640px) {
+    .neurona,
+    .red-oculta {
+      left: var(--x);
+      top: var(--y);
+    }
+  }
+
+  /* ---------- Neuronas pequeñas: parpadean suave, a destiempo ---------- */
+  .red-oculta {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-acento);
+    animation: red-parpadeo 4s ease-in-out infinite;
+    animation-delay: var(--parpadeo);
+  }
+  @keyframes red-parpadeo {
+    0%,
+    100% {
+      opacity: 0.35;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+
+  /* ---------- Neurona de servicio ---------- */
+  .neurona {
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .neurona.is-destacada {
+    width: 4.25rem;
+    height: 4.25rem;
+  }
+  @media (min-width: 1024px) {
+    .neurona {
+      width: 4.5rem;
+      height: 4.5rem;
+    }
+    .neurona.is-destacada {
+      width: 5.5rem;
+      height: 5.5rem;
+    }
+  }
+
+  .neurona-nucleo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    color: var(--color-acento);
+    background: radial-gradient(
+      circle at 35% 30%,
+      var(--color-superficie),
+      color-mix(in srgb, var(--color-acento) 14%, var(--color-superficie)) 70%
+    );
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--color-acento) 35%, transparent),
+      0 8px 24px -8px color-mix(in srgb, var(--color-acento) 45%, transparent);
+    transition:
+      scale 0.4s var(--ease-out-soft),
+      color 0.3s,
+      background 0.3s;
+  }
+  .neurona :global(.neurona-icono) {
+    width: 42%;
+    height: 42%;
+  }
+
+  /* Nombre bajo el círculo, con fondo para leerse sobre las líneas */
+  .neurona-nombre {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 50%;
+    translate: -50% 0;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-fondo) 85%, transparent);
+    color: var(--color-ink-900);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+  @media (min-width: 1024px) {
+    .neurona-nombre {
+      font-size: 0.875rem;
+    }
+  }
+
+  /* Neurona actual (la del panel): núcleo relleno de azul eléctrico.
+     Icono blanco sobre #140ff6: 8.65:1. */
+  .neurona.is-actual .neurona-nucleo {
+    color: #fff;
+    background: radial-gradient(circle at 35% 30%, #4b47ff, var(--color-accion) 70%);
+    box-shadow:
+      inset 0 0 0 1.5px rgb(255 255 255 / 0.25),
+      0 10px 32px -6px color-mix(in srgb, var(--color-accion) 65%, transparent);
+  }
+  .neurona.is-actual .neurona-nombre {
+    color: var(--color-acento);
+  }
+
+  .neurona:hover .neurona-nucleo,
+  .neurona:focus-visible .neurona-nucleo {
+    scale: 1.1;
+  }
+  .neurona:focus-visible {
+    outline-offset: 6px;
+  }
+
+  /* Ondas del disparo: anillos pintados una vez; el script solo los escala */
+  .neurona-onda {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--color-acento);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---------- Líneas (las crea el script: fuera del ámbito de Astro) ---------- */
+  .red :global(.red-linea) {
+    fill: none;
+    stroke: var(--color-acento);
+    stroke-opacity: 0.18;
+    stroke-width: 1;
+    transition: stroke-opacity 0.4s;
+  }
+  .red :global(.red-linea.is-troncal) {
+    stroke-opacity: 0.35;
+    stroke-width: 1.5;
+  }
+  /* Al señalar una neurona, el resto de la red se apaga un poco */
+  .red.red-enfocada :global(.red-linea) {
+    stroke-opacity: 0.08;
+  }
+  .red :global(.red-linea.is-activa),
+  .red.red-enfocada :global(.red-linea.is-activa) {
+    stroke-opacity: 0.55;
+  }
+
+  /* ---------- Chispas ---------- */
+  .red-capa {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  /* Atenuar la actividad de fondo cambia la opacidad de UNA capa, no de
+     cada chispa */
+  .red-capa-ambiente {
+    transition: opacity 0.4s;
+  }
+  .red.red-enfocada .red-capa-ambiente {
+    opacity: 0.25;
+  }
+  /* Punto con resplandor estático: se pinta una vez y luego solo se mueve */
+  .red :global(.red-chispa) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 9999px;
+    background: var(--color-acento);
+    box-shadow: 0 0 6px 1px color-mix(in srgb, var(--color-acento) 55%, transparent);
+    opacity: 0;
+  }
+  .red :global(.red-chispa.is-impulso) {
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    background: radial-gradient(circle, #fff 0 25%, var(--color-acento) 60%);
+    box-shadow: 0 0 12px 3px color-mix(in srgb, var(--color-acento) 65%, transparent);
+  }
+
+  .red.red-pausada .red-oculta {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .red-oculta {
+      animation: none;
+    }
+  }
+</style>

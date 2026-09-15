@@ -30,13 +30,17 @@ const externo = Boolean(agenda.url);
     >
     </div>
     <div class="rejilla absolute inset-0 opacity-[0.35]"></div>
-    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-white"></div>
+    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-fondo"></div>
   </div>
 
   <div class="mx-auto w-full max-w-6xl px-6">
+    {/* min-w-0 en las dos columnas: un hijo de grid no se encoge por debajo de
+        su contenido más ancho. La línea truncada del mockup ("Necesito 400
+        piezas…") forzaba 410px y en un móvil de 360px recortaba el título,
+        los botones y las cifras por la derecha. */}
     <div class="grid items-center gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
       <!-- Columna de texto -->
-      <div>
+      <div class="min-w-0">
         <p class="anim-in text-sm font-medium uppercase tracking-widest text-ink-500">
           {hero.eyebrow}
         </p>
@@ -45,8 +49,23 @@ const externo = Boolean(agenda.url);
           class="anim-in mt-5 text-4xl font-semibold leading-[1.05] tracking-[-0.03em] text-balance sm:text-5xl xl:text-6xl"
           style="--d: 100ms"
         >
-          {hero.titulo}
-          <span class="text-ink-500">{hero.tituloAcento}</span>
+          {hero.titulo}{" "}
+          {/* Azul de marca: 8.65:1 sobre blanco, ~6.8:1 sobre las manchas del hero */}
+          <span class="text-acento">{hero.tituloAcento}</span>
+          {/* Frase estable para lectores de pantalla: la tarjeta cambia cada
+              pocos segundos y anunciarla una y otra vez sería ruido. */}
+          {" "}<span class="sr-only">{hero.tituloRotativo[0]}</span>
+          {/* Tarjeta rotativa en su propia línea (block): así, cuando cambia de
+              ancho, el resto del título no se reacomoda ni salta de renglón. */}
+          <span class="mt-2 block" aria-hidden="true">
+            <span class="rotador text-acento" data-rotador>
+              {
+                hero.tituloRotativo.map((palabra, i) => (
+                  <span class:list={["rotador-palabra", { "is-activa": i === 0 }]}>{palabra}</span>
+                ))
+              }
+            </span>
+          </span>
         </h1>
 
         <p class="anim-in mt-4 max-w-2xl text-lg leading-relaxed text-ink-500" style="--d: 200ms">
@@ -61,7 +80,7 @@ const externo = Boolean(agenda.url);
             href={destinoCta}
             target={externo ? "_blank" : undefined}
             rel={externo ? "noopener noreferrer" : undefined}
-            class="group inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-7 py-3.5 font-medium text-white shadow-lg shadow-brand-500/25 transition-all duration-200 hover:bg-brand-600 hover:shadow-xl hover:shadow-brand-500/30"
+            class="group inline-flex items-center justify-center gap-2 rounded-full bg-accion px-7 py-3.5 font-medium text-white shadow-lg shadow-accion/25 transition-all duration-200 hover:bg-accion-hover hover:shadow-xl hover:shadow-accion/30"
           >
             {agenda.cta}
             <span
@@ -71,7 +90,7 @@ const externo = Boolean(agenda.url);
           </a>
           <a
             href="#producto"
-            class="inline-flex items-center justify-center rounded-full border border-ink-100 bg-white/70 px-7 py-3.5 font-medium text-ink-700 backdrop-blur transition-colors hover:border-ink-300 hover:bg-ink-50"
+            class="inline-flex items-center justify-center rounded-full border border-ink-100 bg-superficie/70 px-7 py-3.5 font-medium text-ink-700 backdrop-blur transition-colors hover:border-ink-300 hover:bg-ink-50"
           >
             Ver el producto
           </a>
@@ -99,7 +118,7 @@ const externo = Boolean(agenda.url);
       </div>
 
       <!-- Columna del mockup -->
-      <div class="anim-in" style="--d: 350ms">
+      <div class="anim-in min-w-0" style="--d: 350ms">
         <HeroVisual />
       </div>
     </div>
@@ -163,7 +182,118 @@ const externo = Boolean(agenda.url);
   }
 </script>
 
+<script>
+  /*
+    Tarjeta rotativa del título. Cada INTERVALO ms la palabra activa gira hacia
+    arriba (rotateX) y la siguiente entra desde abajo, como una tarjeta que
+    voltea. La tarjeta anima su ancho hasta el de la palabra nueva.
+
+    · Con reduced-motion no rota: se queda la primera palabra.
+    · Se pausa cuando el hero sale de pantalla o la pestaña está oculta:
+      no gasta nada mientras nadie lo ve.
+  */
+  const rotador = document.querySelector<HTMLElement>("[data-rotador]");
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (rotador) {
+    const palabras = [...rotador.querySelectorAll<HTMLElement>(".rotador-palabra")];
+    const INTERVALO = 2400;
+    let actual = 0;
+    let temporizador: number | undefined;
+    let visible = true;
+
+    // Ancho = palabra + relleno horizontal de la tarjeta
+    const ajustarAncho = () => {
+      const estilo = getComputedStyle(rotador);
+      const relleno = parseFloat(estilo.paddingLeft) + parseFloat(estilo.paddingRight);
+      rotador.style.width = `${palabras[actual].offsetWidth + relleno}px`;
+    };
+
+    const siguiente = () => {
+      const saliente = palabras[actual];
+      actual = (actual + 1) % palabras.length;
+      const entrante = palabras[actual];
+
+      saliente.classList.remove("is-activa");
+      saliente.classList.add("is-saliendo");
+      entrante.classList.add("is-activa");
+      ajustarAncho();
+
+      // Al terminar de salir vuelve abajo sin transición, lista para su turno
+      saliente.addEventListener(
+        "transitionend",
+        () => saliente.classList.remove("is-saliendo"),
+        { once: true },
+      );
+    };
+
+    const arrancar = () => {
+      if (temporizador || sinMovimiento || !visible || document.hidden) return;
+      temporizador = window.setInterval(siguiente, INTERVALO);
+    };
+    const parar = () => {
+      window.clearInterval(temporizador);
+      temporizador = undefined;
+    };
+
+    ajustarAncho();
+    // Inter se carga con font-display: swap; al llegar cambia el ancho real
+    document.fonts?.ready.then(ajustarAncho);
+    window.addEventListener("resize", ajustarAncho, { passive: true });
+
+    document.addEventListener("visibilitychange", () => (document.hidden ? parar() : arrancar()));
+    new IntersectionObserver(([entrada]) => {
+      visible = entrada.isIntersecting;
+      visible ? arrancar() : parar();
+    }).observe(rotador);
+
+    arrancar();
+  }
+</script>
+
 <style>
+  /* Tarjeta: lavado del azul de marca con borde fino. Todas las palabras
+     ocupan la misma celda de la rejilla; solo la activa es visible. */
+  .rotador {
+    position: relative;
+    /* Al copiar el título no se arrastran todas las palabras ocultas */
+    user-select: none;
+    /* En móvil la frase más larga (17 caracteres) no cabe a 36px en 312px de
+       ancho útil: la letra de la tarjeta baja con la pantalla. En escritorio
+       manda 1em (el tamaño del título). */
+    font-size: min(1em, 8.4vw);
+    display: inline-grid;
+    justify-items: start;
+    overflow: hidden;
+    padding: 0.04em 0.28em 0.1em;
+    border-radius: 0.22em;
+    /* Mezcla translúcida (no con blanco): sirve igual en modo claro y oscuro */
+    background: color-mix(in srgb, var(--color-acento) 9%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-acento) 22%, transparent);
+    perspective: 600px;
+    transition: width 0.55s var(--ease-out-soft);
+  }
+  .rotador-palabra {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+    /* Gira alrededor de un eje detrás del texto: se ve como la cara de un cubo */
+    transform-origin: 50% 50% -0.5em;
+    backface-visibility: hidden;
+    opacity: 0;
+    transform: rotateX(-90deg);
+    transition:
+      transform 0.6s var(--ease-out-soft),
+      opacity 0.4s var(--ease-out-soft);
+  }
+  .rotador-palabra.is-activa {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+  .rotador-palabra.is-saliendo {
+    opacity: 0;
+    transform: rotateX(90deg);
+  }
+
   /* Rejilla sutil de fondo, dibujada con gradientes: cero peticiones. */
   .rejilla {
     background-image:

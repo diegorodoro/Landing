@@ -1,26 +1,104 @@
 ---
 import { proposito } from "../config";
+import Robot from "./Robot.astro";
+import Icono from "./Icono.astro";
+
+/*
+  Parte una frase en palabras para el efecto de lectura, marcando las que
+  pertenecen al fragmento destacado. Si el fragmento no aparece tal cual en
+  la frase, simplemente no se resalta nada.
+*/
+const palabras = (texto: string, destacado: string) => {
+  const i = texto.indexOf(destacado);
+  const tramos =
+    i === -1
+      ? [{ texto, destacado: false }]
+      : [
+          { texto: texto.slice(0, i), destacado: false },
+          { texto: destacado, destacado: true },
+          { texto: texto.slice(i + destacado.length), destacado: false },
+        ];
+  return tramos
+    .map((t) => ({ ...t, palabras: t.texto.split(/\s+/).filter(Boolean) }))
+    .filter((t) => t.palabras.length);
+};
+
+const declaraciones = [
+  { etiqueta: "Misión", icono: "diana" as const, tramos: palabras(proposito.mision, proposito.misionDestacado) },
+  { etiqueta: "Visión", icono: "ojo" as const, tramos: palabras(proposito.vision, proposito.visionDestacado) },
+];
 ---
 
-<section class="flex min-h-svh items-center py-20 sm:py-24">
+{/*
+  Misión y Visión como DECLARACIONES, no como párrafos:
+  · Tipografía grande y seminegra, con el fragmento clave en azul de marca y
+    un marcador que se dibuja debajo.
+  · Lectura guiada: al hacer scroll las palabras se encienden una a una, al
+    ritmo de la vista. Cuando el texto está a media pantalla ya está completo,
+    así que nunca se queda a medias mientras alguien lo lee.
+  · Sin JavaScript o con reduced-motion el texto se ve completo desde el inicio.
+  · El robot va al centro, entre las dos (arriba en móvil).
+*/}
+<section class="flex min-h-svh items-center py-20 sm:py-28">
   <div class="mx-auto w-full max-w-6xl px-6">
-    <div class="grid gap-12 lg:grid-cols-2 lg:gap-20">
-      <div data-reveal>
-        <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Misión</p>
-        <p class="mt-4 text-2xl font-medium leading-snug tracking-tight text-balance">
-          {proposito.mision}
-        </p>
-      </div>
-
-      <div data-reveal style="--d: 120ms">
-        <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Visión</p>
-        <p class="mt-4 text-2xl font-medium leading-snug tracking-tight text-balance">
-          {proposito.vision}
-        </p>
-      </div>
+    {/* Robot al centro, entre Misión y Visión: al leer una u otra, sus ojos
+        siguen el cursor hacia ese lado. En móvil va arriba de las dos. */}
+    <div class="proposito-rejilla grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_14rem_minmax(0,1fr)] lg:gap-12">
+      {
+        declaraciones.map((d, n) => (
+          <>
+            {n === 1 && (
+              <div class="order-first lg:order-none" data-reveal style="--d: 60ms">
+                <Robot clase="w-40 sm:w-48 lg:w-full" />
+              </div>
+            )}
+            <div class:list={[{ "lg:text-right": n === 0 }]} data-reveal style={`--d: ${n * 120}ms`}>
+              {/* Capa interior para el enfoque: el exterior ya anima la entrada
+                  (data-reveal) y sus transiciones chocarían con el desenfoque */}
+              <div class="declaracion-bloque">
+              <p class="inline-flex items-center gap-2 rounded-full bg-brand-50 py-1.5 pr-3.5 pl-2.5 text-sm font-semibold uppercase tracking-widest text-acento">
+                <Icono nombre={d.icono} clase="h-4.5 w-4.5" />
+                {d.etiqueta}
+              </p>
+              <p
+                class="declaracion mt-5 text-3xl leading-[1.18] font-semibold tracking-[-0.025em] text-balance sm:text-4xl lg:text-[2rem] xl:text-4xl"
+                data-lectura
+              >
+                {d.tramos.map((tramo) =>
+                  tramo.destacado ? (
+                    <>
+                      {/* El espacio final va FUERA del marcador para que no sobresalga */}
+                      <span class="declaracion-destacado" data-destacado>
+                        {tramo.palabras.map((p, i) => (
+                          <>
+                            <span class="declaracion-palabra" data-palabra>
+                              {p}
+                            </span>
+                            {i < tramo.palabras.length - 1 && " "}
+                          </>
+                        ))}
+                      </span>{" "}
+                    </>
+                  ) : (
+                    tramo.palabras.map((p) => (
+                      <>
+                        <span class="declaracion-palabra" data-palabra>
+                          {p}
+                        </span>{" "}
+                      </>
+                    ))
+                  ),
+                )}
+              </p>
+              </div>
+            </div>
+          </>
+        ))
+      }
     </div>
 
-    <div class="mt-16 rounded-2xl border border-ink-100 p-8" data-reveal>
+    {/* Al señalar lo que NO hacemos, el robot se enoja (ver script) */}
+    <div class="compromisos mt-20 rounded-2xl border border-ink-100 p-8 transition-colors duration-300" data-reveal data-enoja-robot>
       <h3 class="text-sm font-medium uppercase tracking-widest text-ink-500">
         Dos cosas que no hacemos
       </h3>
@@ -28,7 +106,7 @@ import { proposito } from "../config";
         {
           proposito.compromisos.map((compromiso) => (
             <li class="flex gap-3 text-lg leading-relaxed">
-              <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+              <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-acento" aria-hidden="true" />
               <span>{compromiso}</span>
             </li>
           ))
@@ -36,5 +114,152 @@ import { proposito } from "../config";
       </ul>
     </div>
   </div>
-
 </section>
+
+<script>
+  /*
+    "Dos cosas que no hacemos" enoja al robot:
+    · Con cursor: mientras está encima.
+    · Con toque: se enoja un par de segundos y se le pasa.
+  */
+  const tarjetaEnojo = document.querySelector<HTMLElement>("[data-enoja-robot]");
+  const robotEnojo = tarjetaEnojo?.closest("section")?.querySelector<HTMLElement>("[data-robot]");
+
+  if (tarjetaEnojo && robotEnojo) {
+    const humor = (detail: "enojado" | "normal") =>
+      robotEnojo.dispatchEvent(new CustomEvent("robot:humor", { detail }));
+    let seLePasa: number | undefined;
+
+    tarjetaEnojo.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "mouse") humor("enojado");
+    });
+    tarjetaEnojo.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "mouse") humor("normal");
+    });
+    tarjetaEnojo.addEventListener("pointerup", (e) => {
+      if (e.pointerType === "mouse") return;
+      humor("enojado");
+      window.clearTimeout(seLePasa);
+      seLePasa = window.setTimeout(() => humor("normal"), 2500);
+    });
+  }
+</script>
+
+<script>
+  /*
+    Lectura guiada: enciende las palabras según el avance del scroll.
+    Progreso 0 cuando el texto asoma por el 85% inferior de la pantalla;
+    progreso 1 cuando su borde inferior sube al 55%. Así, en cuanto el texto
+    está cómodamente a la vista, ya está completo.
+  */
+  const textos = [...document.querySelectorAll<HTMLElement>("[data-lectura]")];
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (textos.length && !sinMovimiento) {
+    const datos = textos.map((el) => ({
+      el,
+      palabras: [...el.querySelectorAll<HTMLElement>("[data-palabra]")],
+      destacados: [...el.querySelectorAll<HTMLElement>("[data-destacado]")],
+    }));
+
+    // Solo con JS se atenúan las palabras: sin él, el texto se ve completo
+    textos.forEach((el) => el.classList.add("is-guiada"));
+
+    let pendiente = false;
+    const actualizar = () => {
+      pendiente = false;
+      const alto = window.innerHeight;
+      for (const { el, palabras, destacados } of datos) {
+        const r = el.getBoundingClientRect();
+        const progreso = (alto * 0.85 - r.top) / (alto * 0.3 + r.height);
+        const encendidas = Math.ceil(Math.max(0, Math.min(1, progreso)) * palabras.length);
+        palabras.forEach((p, i) => p.classList.toggle("is-leida", i < encendidas));
+        // El marcador se dibuja cuando se ha leído la última palabra destacada
+        destacados.forEach((d) => {
+          const ultima = d.querySelector<HTMLElement>("[data-palabra]:last-child");
+          d.classList.toggle("is-leido", !!ultima?.classList.contains("is-leida"));
+        });
+      }
+    };
+    const pedir = () => {
+      if (pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(actualizar);
+    };
+
+    actualizar();
+    window.addEventListener("scroll", pedir, { passive: true });
+    window.addEventListener("resize", pedir, { passive: true });
+  }
+</script>
+
+<style>
+  /* La tarjeta se tiñe de rojo junto con el enojo del robot */
+  @media (hover: hover) {
+    .compromisos:hover {
+      border-color: rgb(239 68 68 / 0.45);
+      background: rgb(239 68 68 / 0.04);
+    }
+  }
+
+  /* Enfoque: al señalar una declaración, la otra se desenfoca y se atenúa.
+     Solo en escritorio (lado a lado) y con cursor real; en móvil están
+     apiladas y un toque no debería dejar texto borroso. */
+  @media (min-width: 1024px) and (hover: hover) {
+    .declaracion-bloque {
+      transition:
+        filter 0.45s var(--ease-out-soft),
+        opacity 0.45s var(--ease-out-soft),
+        scale 0.45s var(--ease-out-soft);
+    }
+    .proposito-rejilla:has(.declaracion-bloque:hover) .declaracion-bloque:not(:hover) {
+      filter: blur(5px);
+      opacity: 0.4;
+      scale: 0.97;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .declaracion-bloque {
+      transition: none;
+    }
+  }
+
+  .declaracion {
+    color: var(--color-ink-900);
+  }
+
+  /* Palabras atenuadas hasta que la lectura llega a ellas */
+  .declaracion.is-guiada .declaracion-palabra {
+    color: var(--color-ink-300);
+    transition: color 0.35s var(--ease-out-soft);
+  }
+  .declaracion.is-guiada .declaracion-palabra.is-leida {
+    color: var(--color-ink-900);
+  }
+
+  /* Fragmento clave: azul de marca con marcador detrás.
+     El marcador ocupa el 38% inferior de la línea y se dibuja de izquierda a
+     derecha. box-decoration-break: clone lo repite en cada renglón. */
+  .declaracion-destacado {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--color-acento) 16%, transparent),
+      color-mix(in srgb, var(--color-acento) 16%, transparent)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 100% 38%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .declaracion:not(.is-guiada) .declaracion-destacado .declaracion-palabra,
+  .declaracion.is-guiada .declaracion-destacado .declaracion-palabra.is-leida {
+    color: var(--color-acento);
+  }
+  .declaracion.is-guiada .declaracion-destacado {
+    background-size: 0% 38%;
+    transition: background-size 0.9s var(--ease-out-soft);
+  }
+  .declaracion.is-guiada .declaracion-destacado.is-leido {
+    background-size: 100% 38%;
+  }
+</style>

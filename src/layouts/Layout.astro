@@ -16,7 +16,32 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!--
+      Tema: se decide ANTES de pintar para que no haya destello blanco al
+      cargar en modo oscuro. Bloqueante e inline a propósito (unas pocas líneas).
+      1. Si la persona eligió un tema con el botón, se respeta (localStorage).
+      2. Si no, se sigue la preferencia del sistema.
+      theme-color tiñe la barra del navegador en móvil con el color de la página.
+    -->
+    <meta name="theme-color" content="#ffffff" data-tema-color />
+    <script is:inline>
+      (function () {
+        var guardado = null;
+        try {
+          guardado = localStorage.getItem("tema");
+        } catch (e) {}
+        var oscuro = guardado
+          ? guardado === "oscuro"
+          : window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = oscuro ? "dark" : "light";
+        if (oscuro) document.querySelector("[data-tema-color]").content = "#0c0c20";
+      })();
+    </script>
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Precarga solo la fuente latina: es la que pinta el <h1> del hero (LCP). -->
     <link
@@ -69,7 +94,7 @@ const canonical = new URL(Astro.url.pathname, site.url).href;
   <body>
     <a
       href="#contenido"
-      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accion focus:px-4 focus:py-2 focus:text-white"
     >
       Saltar al contenido
     </a>

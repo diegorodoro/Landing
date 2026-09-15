@@ -22,7 +22,12 @@ interface Props {
     | "capas" // tecnología y datos
     | "barras" // modelo de negocio
     | "libro" // capacitación
-    | "check"; // viñeta de lista
+    | "check" // viñeta de lista
+    | "lupa" // diagnóstico
+    | "rayo" // piloto rápido
+    | "pulso" // seguimiento continuo
+    | "diana" // misión: a qué apuntamos
+    | "ojo"; // visión: hacia dónde miramos
   clase?: string;
   titulo?: string;
 }
@@ -46,6 +51,16 @@ const trazos: Record<Props["nombre"], string> = {
   // Palomeo de las listas. Antes vivía suelto en 3 componentes con otra
   // rejilla (20×20) y otro trazo (1.75): ahora comparte gramática.
   check: "M5 12.5l4.5 4.5 9.5-10.5",
+  // Lupa: el mango sale del círculo (círculo en `circulos`).
+  lupa: "M15.6 15.6 20 20",
+  // Rayo: resultado rápido.
+  rayo: "M13 3 5.5 13.5H12L11 21l7.5-10.5H12L13 3Z",
+  // Línea de pulso: algo vivo que se vigila.
+  pulso: "M3 12h4l2.5-6 5 12 2.5-6h4",
+  // Diana: centro en `circulos`; la flecha llega al blanco.
+  diana: "M12 12 20 4M16.5 4H20v3.5",
+  // Ojo: contorno almendrado, pupila en `circulos`.
+  ojo: "M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z",
   libro:
     "M4 5.6A1.6 1.6 0 0 1 5.6 4H11v16H5.6A1.6 1.6 0 0 1 4 18.4V5.6ZM20 5.6A1.6 1.6 0 0 0 18.4 4H13v16h5.4a1.6 1.6 0 0 0 1.6-1.6V5.6Z",
 };
@@ -58,6 +73,12 @@ const circulos: Partial<Record<Props["nombre"], { cx: number; cy: number; r: num
     { cx: 11, cy: 16.5, r: 2.1 },
   ],
   llave: [{ cx: 8.4, cy: 8.4, r: 3.9 }],
+  lupa: [{ cx: 10.5, cy: 10.5, r: 6.5 }],
+  diana: [
+    { cx: 12, cy: 12, r: 8.5 },
+    { cx: 12, cy: 12, r: 4.5 },
+  ],
+  ojo: [{ cx: 12, cy: 12, r: 3 }],
   flujo: [
     { cx: 5, cy: 6, r: 2 },
     { cx: 5, cy: 18, r: 2 },

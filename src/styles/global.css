@@ -35,32 +35,129 @@
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* ACENTO. Hoy es neutral: el protagonismo lo cargan la tipografía y la
-     estructura, no el color. Cambia estos valores y cambia la identidad
-     sin tocar un solo componente. */
-  --color-brand-50: #f5f3f0; /* lavado cálido (fondo del hero) */
-  --color-brand-100: #e7e5e4;
-  --color-brand-500: #1c1917; /* CTA primario. Blanco encima: 17.49:1 */
-  --color-brand-600: #3f3a36; /* hover */
-  --color-brand-700: #0f0d0c;
-  /* Acento sobre fondo oscuro: 6.93:1 sobre ink-900. */
-  --color-brand-300: #a8a29e;
+  /* ACENTO: azul de la marca Solotu, SUAVIZADO. El logotipo usa #140FF6
+     (eléctrico, 93% de saturación); en superficies grandes cansa la vista,
+     así que la web usa el mismo tono con la saturación bajada a ~60%.
+     El logo conserva su azul original. Ratios de contraste al lado. */
+  --color-brand-50: #f3f3fc; /* lavado (fondos, aurora del hero) */
+  --color-brand-100: #e1e0f5; /* pistas de barras, manchas */
+  --color-brand-500: #3e39d0; /* COLOR DE ACENTO. CTA primario. Blanco encima: 7.78:1 */
+  --color-brand-600: #3936a1; /* hover. Blanco encima: 9.48:1 */
+  --color-brand-700: #2f2d76; /* texto azul sobre fondo claro: 11.95:1 sobre blanco */
+  /* Acento sobre fondo oscuro: 6.67:1 sobre brand-900. NUNCA sobre blanco (2.28:1). */
+  --color-brand-300: #a7a5e9;
+  /* Azul noche apagado: fondo de las secciones oscuras (Producto, Agenda).
+     Blanco encima: 15.22:1 · ink-100: 12.01:1 · ink-300: 7.14:1 */
+  --color-brand-900: #212245;
 
-  /* Neutros CÁLIDOS. El gris azulado anterior (#0c0d12 … #a7abbb) es el
-     tono por defecto del género; este tiene algo de tierra y se lee menos
-     genérico sin gritar. Ratios sobre blanco al lado de cada uno. */
-  --color-ink-900: #1c1917; /* 17.49:1 */
-  --color-ink-700: #3f3a36; /* 11.23:1 — cuerpo */
-  --color-ink-500: #6b6360; /*  5.87:1 — atenuado */
-  --color-ink-300: #a8a29e; /*  2.52:1 — SOLO sobre fondo oscuro */
-  --color-ink-100: #e7e5e4; /* bordes decorativos y divisores */
-  --color-ink-50: #faf9f8;
+  /* ACCIÓN: el azul eléctrico ORIGINAL del logotipo, solo para botones
+     primarios. Pequeño y puntual, así destaca sin cansar la vista.
+     Blanco encima: 8.65:1 · hover 11.08:1 */
+  --color-accion: #140ff6;
+  --color-accion-hover: #100bc7;
+
+  /* ACENTO: el mismo azul, pero para TEXTO, ICONOS y LÍNEAS (no rellenos).
+     Se separa de --color-accion porque en modo oscuro no pueden ser iguales:
+     un botón necesita un azul oscuro para su texto blanco y un icono sobre
+     fondo oscuro necesita un azul claro. */
+  --color-acento: #140ff6;
+
+  /* SUPERFICIES. fondo = página; superficie = tarjetas sobre ella.
+     En claro las dos son blancas; en oscuro la tarjeta es un paso más clara
+     que la página (en oscuro la elevación se marca con luz, no con sombra). */
+  --color-fondo: #ffffff;
+  --color-superficie: #ffffff;
+
+  /* Neutros con matiz AZUL: el mismo tono de la marca, casi sin saturación.
+     Así textos, bordes y fondos claros son "azul muy apagado" y toda la
+     página se lee en una sola familia: azul + blanco. Ratios sobre blanco. */
+  --color-ink-900: #0b0a2e; /* 19.14:1 — títulos */
+  --color-ink-700: #2f2e57; /* 12.73:1 — cuerpo */
+  --color-ink-500: #595880; /*  6.70:1 — atenuado */
+  --color-ink-300: #aeade0; /*  2.13:1 — SOLO sobre fondo oscuro */
+  --color-ink-100: #e3e3f4; /* bordes decorativos y divisores */
+  --color-ink-50: #f5f5fd; /* fondo de secciones claras alternas */
   /* Borde de campos de formulario: WCAG 1.4.11 pide 3:1 a los bordes de un
-     control, e ink-100 solo da 1.26:1. Este da 3.82:1. */
-  --color-line: #8a817a;
+     control. Este da 3.56:1. */
+  --color-line: #8584ad;
 
   /* Ritmo de animación */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   MODO OSCURO
+   Se activa con data-theme="dark" en <html> (lo pone un script en el <head>
+   antes de pintar, ver Layout.astro). Solo se redefinen TOKENS: los
+   componentes no saben que existe el modo oscuro.
+
+   Decisiones:
+   · No es negro puro: es azul noche (#0c0c20), de la misma familia que la
+     marca. El negro puro con texto blanco produce halo y cansa.
+   · El texto principal no es blanco puro (#f2f2fb) por la misma razón.
+   · La escala ink se INVIERTE: ink-900 sigue siendo "el texto más fuerte",
+     solo que ahora es claro. Así text-ink-900 funciona en los dos modos.
+   · Los botones conservan el azul eléctrico con texto blanco (8.65:1).
+     Lo que se aclara es el acento de texto e iconos.
+
+   Contraste sobre fondo / superficie:
+     ink-900 17.3 / 15.5 · ink-700 12.7 / 11.4 · ink-500 8.1 / 7.2
+     acento 6.7 / 6.0 · brand-500 5.4 / 4.8 · line 3.9 / 3.4 (bordes, 3:1)
+   ========================================================================== */
+:root {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-fondo: #0c0c20;
+  --color-superficie: #17173a;
+
+  --color-ink-900: #f2f2fb;
+  --color-ink-700: #d0d0e8;
+  --color-ink-500: #a5a4ca;
+  --color-ink-300: #6d6c98;
+  --color-ink-100: #2b2b55;
+  --color-ink-50: #111129;
+  --color-line: #6b6aa0;
+
+  --color-brand-50: #1b1b47;
+  --color-brand-100: #27275f;
+  --color-brand-500: #7d79f2;
+  --color-brand-600: #9c99f5;
+  --color-brand-700: #c9c7f7;
+
+  --color-acento: #8f8bff;
+}
+
+/* Las secciones que YA son oscuras (Producto, Agenda) no cambian: su diseño
+   y el de las maquetas y el formulario blanco que contienen asumen los
+   tokens claros. Se restauran aquí, dentro de ellas. */
+:root[data-theme="dark"] [data-fondo-oscuro] {
+  --color-fondo: #ffffff;
+  --color-superficie: #ffffff;
+  --color-ink-900: #0b0a2e;
+  --color-ink-700: #2f2e57;
+  --color-ink-500: #595880;
+  --color-ink-300: #aeade0;
+  --color-ink-100: #e3e3f4;
+  --color-ink-50: #f5f5fd;
+  --color-line: #8584ad;
+  --color-brand-50: #f3f3fc;
+  --color-brand-100: #e1e0f5;
+  --color-brand-500: #3e39d0;
+  --color-brand-600: #3936a1;
+  --color-brand-700: #2f2d76;
+  --color-acento: #140ff6;
+}
+
+/* Verdes de estado ("Activo", "+38%") fuera de las secciones oscuras: el
+   verde-50 de Tailwind es un parche casi blanco sobre fondo oscuro. */
+:root[data-theme="dark"] .bg-green-50:not([data-fondo-oscuro] *) {
+  background-color: rgb(34 197 94 / 0.14);
+}
+:root[data-theme="dark"] :is(.text-green-600, .text-green-700):not([data-fondo-oscuro] *) {
+  color: #4ade80;
 }
 
 /* ==========================================================================
@@ -69,25 +166,34 @@
 html {
   scroll-behavior: smooth;
   /* Compensa la nav fija al saltar a una sección con # */
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 6rem;
 }
 
 body {
-  background: #fff;
+  background: var(--color-fondo);
   color: var(--color-ink-900);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--color-brand-500);
+  background: var(--color-accion);
   color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand-500);
+  outline: 2px solid var(--color-acento);
   outline-offset: 3px;
   border-radius: 4px;
+}
+/* Sobre fondo oscuro el anillo azul se pierde (1.96:1 sobre brand-900; WCAG
+   1.4.11 pide 3:1). Se aclara ahí, salvo dentro de tarjetas blancas. */
+[data-fondo-oscuro] :focus-visible,
+[data-nav].glass-oscura :focus-visible {
+  outline-color: var(--color-brand-300);
+}
+[data-fondo-oscuro] .bg-white :focus-visible {
+  outline-color: var(--color-brand-500);
 }
 
 /* ==========================================================================
@@ -104,18 +210,40 @@ body {
    ========================================================================== */
 [data-nav] {
   --glass-relleno: rgb(255 255 255 / 0.72);
-  --glass-borde: rgb(28 25 23 / 0.08);
+  --glass-borde: rgb(11 10 46 / 0.08);
   --glass-texto: var(--color-ink-500);
   --glass-fuerte: var(--color-ink-900);
-  --glass-cta-fondo: var(--color-ink-900);
+  --glass-cta-fondo: var(--color-accion);
   --glass-cta-texto: #fff;
+  --glass-brillo: rgb(255 255 255 / 0.9);
+  --glass-sombra-interior: rgb(11 10 46 / 0.04);
 }
 
-[data-nav].glass {
+/* La cápsula siempre ocupa su sitio; arriba del todo es invisible (relleno,
+   borde y sombra transparentes) y al hacer scroll se materializa. Así no hay
+   salto de layout: solo cambia el material. */
+[data-nav] .nav-capsula {
+  border: 1px solid transparent;
+  transition:
+    background-color 0.35s var(--ease-out-soft),
+    border-color 0.35s var(--ease-out-soft),
+    box-shadow 0.35s var(--ease-out-soft),
+    backdrop-filter 0.35s var(--ease-out-soft);
+}
+
+/* Material: relleno translúcido + desenfoque, borde de un píxel, brillo
+   especular en el canto superior (luz que entra por arriba) y una sombra
+   suave que despega la cápsula del contenido. */
+[data-nav].glass .nav-capsula {
   background: var(--glass-relleno);
   backdrop-filter: blur(24px) saturate(1.4);
   -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border-bottom: 1px solid var(--glass-borde);
+  border-color: var(--glass-borde);
+  box-shadow:
+    inset 0 1px 0 var(--glass-brillo),
+    inset 0 -1px 0 var(--glass-sombra-interior),
+    0 8px 32px -8px rgb(11 10 46 / 0.18),
+    0 2px 6px rgb(11 10 46 / 0.04);
 }
 
 /* El cristal no tiene color propio: toma el de lo que hay debajo. Cuando la
@@ -124,39 +252,78 @@ body {
    Symbols and text on it default to monochrome: darker over light content,
    lighter over dark." */
 [data-nav].glass-oscura {
-  --glass-relleno: rgb(28 25 23 / 0.62);
+  --glass-relleno: rgb(33 34 69 / 0.62);
   --glass-borde: rgb(255 255 255 / 0.14);
   --glass-texto: var(--color-ink-300);
   --glass-fuerte: #fff;
   --glass-cta-fondo: #fff;
-  --glass-cta-texto: var(--color-ink-900);
+  --glass-cta-texto: var(--color-accion);
+  --glass-brillo: rgb(255 255 255 / 0.16);
+  --glass-sombra-interior: rgb(0 0 0 / 0.2);
 }
 
-/* Scroll edge effect: banda donde el contenido se desenfoca al encontrarse con
-   la barra, en lugar de chocar con ella (checklist 6). */
-[data-nav].glass::after {
-  content: "";
-  position: absolute;
-  inset-inline: 0;
-  top: 100%;
-  height: 1.25rem;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  mask-image: linear-gradient(to bottom, #000, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, #000, transparent);
-  pointer-events: none;
+/* Modo oscuro: la barra usa siempre el material oscuro, sobre cualquier
+   sección. Mismo relleno azul noche translúcido que sobre Producto/Agenda. */
+:root[data-theme="dark"] [data-nav] {
+  --glass-relleno: rgb(23 23 58 / 0.66);
+  --glass-borde: rgb(255 255 255 / 0.1);
+  --glass-texto: var(--color-ink-500);
+  --glass-fuerte: var(--color-ink-900);
+  --glass-cta-fondo: var(--color-accion);
+  --glass-cta-texto: #fff;
+  --glass-brillo: rgb(255 255 255 / 0.12);
+  --glass-sombra-interior: rgb(0 0 0 / 0.25);
 }
 
 [data-nav] .nav-marca {
   color: var(--glass-fuerte);
 }
-[data-nav] .nav-marca-acento,
+/* Logo: cruza entre la versión oscura y la clara con el tono de la barra */
+[data-nav] .nav-logo,
+[data-nav] .nav-logo-claro {
+  transition: opacity 0.3s var(--ease-out-soft);
+}
+[data-nav] .nav-logo-claro,
+[data-nav].glass-oscura .nav-logo {
+  opacity: 0;
+}
+[data-nav].glass-oscura .nav-logo-claro,
+:root[data-theme="dark"] [data-nav] .nav-logo-claro {
+  opacity: 1;
+}
+:root[data-theme="dark"] [data-nav] .nav-logo {
+  opacity: 0;
+}
 [data-nav] .nav-enlace {
   color: var(--glass-texto);
 }
 [data-nav] .nav-enlace:hover {
   color: var(--glass-fuerte);
 }
+/* Botón de tema: hereda el color de las etiquetas de la barra, así se adapta
+   solo sobre secciones oscuras y en modo oscuro. */
+[data-nav] .nav-tema {
+  color: var(--glass-fuerte);
+}
+[data-nav] .nav-tema:hover {
+  background: color-mix(in srgb, var(--glass-fuerte) 10%, transparent);
+}
+/* Luna y sol se cruzan girando: el que sale rota y se encoge */
+[data-nav] .nav-tema svg {
+  transition:
+    transform 0.4s var(--ease-out-soft),
+    opacity 0.25s var(--ease-out-soft);
+}
+[data-nav] .nav-tema-sol,
+:root[data-theme="dark"] [data-nav] .nav-tema-luna {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+:root[data-theme="dark"] [data-nav] .nav-tema-sol {
+  opacity: 1;
+  transform: none;
+}
+
 [data-nav] .nav-cta {
   background: var(--glass-cta-fondo);
   color: var(--glass-cta-texto);
@@ -166,16 +333,18 @@ body {
    · Menos transparencia -> relleno opaco, sin desenfoque.
    · Más contraste       -> relleno sólido y borde marcado. */
 @media (prefers-reduced-transparency: reduce) {
-  [data-nav].glass {
+  [data-nav].glass .nav-capsula {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+  [data-nav].glass {
     --glass-relleno: #fff;
   }
   [data-nav].glass.glass-oscura {
-    --glass-relleno: var(--color-ink-900);
+    --glass-relleno: var(--color-brand-900);
   }
-  [data-nav].glass::after {
-    display: none;
+  :root[data-theme="dark"] [data-nav].glass {
+    --glass-relleno: var(--color-fondo);
   }
 }
 @media (prefers-contrast: more) {
@@ -184,8 +353,11 @@ body {
     --glass-borde: var(--color-ink-900);
     --glass-texto: var(--color-ink-700);
   }
+  :root[data-theme="dark"] [data-nav].glass {
+    --glass-relleno: var(--color-fondo);
+  }
   [data-nav].glass.glass-oscura {
-    --glass-relleno: var(--color-ink-900);
+    --glass-relleno: var(--color-brand-900);
     --glass-borde: #fff;
     --glass-texto: var(--color-ink-100);
   }
@@ -196,6 +368,7 @@ body {
    1. Entrada al hacer scroll  -> [data-reveal], activado por IntersectionObserver
    2. Entrada al cargar        -> .anim-in, con --d como retraso
    3. Fondo del hero           -> .aurora
+   4. Gradiente vivo           -> .gradiente-oscuro / .gradiente-claro (secciones)
    Todas se desactivan con prefers-reduced-motion (ver el bloque final).
    ========================================================================== */
 
@@ -247,6 +420,132 @@ body {
 .aurora {
   animation: drift 18s ease-in-out infinite;
   will-change: transform;
+}
+
+/* 4. Gradiente vivo en secciones.
+      Dos capas (::before y ::after), cada una el doble de grande que la
+      sección, con manchas radiales de azul. Giran en sentidos opuestos y a
+      distinto ritmo, así los colores se cruzan y se mezclan en lugar de
+      desplazarse en bloque. Solo se anima transform (GPU).
+      Opacidades acotadas para no romper el contraste del texto, calculadas
+      con las dos capas SOLAPADAS en su punto más intenso:
+      · Oscuro: ink-300 ≥ 4.93:1 · brand-300 ≥ 4.61:1
+      · Claro:  ink-500 ≥ 4.81:1 */
+/* Cada capa gira 360° sobre el centro de la sección. Como las manchas están
+   descentradas, orbitan y recorren la sección de lado a lado; el pulso de
+   escala las acerca y aleja del centro para que la órbita no sea un círculo
+   perfecto y predecible. */
+@keyframes flujo-a {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    transform: rotate(90deg) scale(1.45);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.8);
+  }
+  75% {
+    transform: rotate(270deg) scale(1.35);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+@keyframes flujo-b {
+  0% {
+    transform: rotate(0deg) scale(1.2);
+  }
+  33% {
+    transform: rotate(-120deg) scale(0.8);
+  }
+  66% {
+    transform: rotate(-240deg) scale(1.5);
+  }
+  100% {
+    transform: rotate(-360deg) scale(1.2);
+  }
+}
+.gradiente-oscuro,
+.gradiente-claro {
+  position: relative;
+  isolation: isolate; /* las capas -z-1 quedan detrás del contenido, no de la página */
+  overflow: clip; /* recorta las capas sin crear un contenedor de scroll */
+}
+.gradiente-oscuro::before,
+.gradiente-oscuro::after,
+.gradiente-claro::before,
+.gradiente-claro::after {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
+}
+/* Giros en sentidos opuestos y a distinto ritmo: las manchas se cruzan
+   y se mezclan. linear para que la órbita no frene en cada vuelta (0° y
+   360° son el mismo punto, así que no hay salto al reiniciar). */
+.gradiente-oscuro::before,
+.gradiente-claro::before {
+  animation: flujo-a 8s linear infinite;
+}
+.gradiente-oscuro::after,
+.gradiente-claro::after {
+  animation: flujo-b 11s linear infinite;
+}
+/* Manchas lejos del centro (órbita amplia) y grandes, para que el recorrido
+   se vea de un extremo a otro de la sección. */
+.gradiente-oscuro::before {
+  background:
+    radial-gradient(26% 30% at 28% 32%, rgb(20 15 246 / 0.5), transparent 70%),
+    radial-gradient(22% 24% at 74% 74%, rgb(20 15 246 / 0.4), transparent 70%);
+}
+.gradiente-oscuro::after {
+  background:
+    radial-gradient(28% 26% at 72% 30%, rgb(62 57 208 / 0.4), transparent 70%),
+    radial-gradient(22% 26% at 30% 72%, rgb(167 165 233 / 0.12), transparent 70%);
+}
+.gradiente-claro::before {
+  background:
+    radial-gradient(28% 30% at 28% 68%, rgb(207 205 249 / 0.8), transparent 70%),
+    radial-gradient(20% 22% at 72% 30%, rgb(207 205 249 / 0.7), transparent 70%);
+}
+.gradiente-claro::after {
+  background:
+    radial-gradient(26% 28% at 70% 66%, rgb(217 216 251 / 0.8), transparent 70%),
+    radial-gradient(20% 22% at 32% 32%, rgb(20 15 246 / 0.06), transparent 70%);
+}
+/* En modo oscuro las manchas lila casi blancas deslumbrarían: se cambian por
+   azul de marca a baja opacidad. Peor caso (las dos capas encimadas):
+   ink-500 6.1:1, ink-900 13.1:1. */
+:root[data-theme="dark"] .gradiente-claro::before {
+  background:
+    radial-gradient(28% 30% at 28% 68%, rgb(20 15 246 / 0.22), transparent 70%),
+    radial-gradient(20% 22% at 72% 30%, rgb(20 15 246 / 0.16), transparent 70%);
+}
+:root[data-theme="dark"] .gradiente-claro::after {
+  background:
+    radial-gradient(26% 28% at 70% 66%, rgb(62 57 208 / 0.22), transparent 70%),
+    radial-gradient(20% 22% at 32% 32%, rgb(143 139 255 / 0.08), transparent 70%);
+}
+
+/* Cambio de tema: fundido corto con View Transitions donde exista. Sin él,
+   cada elemento con transition-colors cambiaría a su propio ritmo. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+
+/* Si alguien desactiva el movimiento en su sistema, el gradiente se queda
+   quieto pero se sigue viendo: el color no molesta, el movimiento sí. */
+@media (prefers-reduced-motion: reduce) {
+  .gradiente-oscuro::before,
+  .gradiente-oscuro::after,
+  .gradiente-claro::before,
+  .gradiente-claro::after {
+    animation: none;
+  }
 }
 
 /* Línea que se dibuja sola (proceso). El keyframe existía sin usarse;

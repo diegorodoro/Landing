@@ -25,7 +25,7 @@ import Icono from "./Icono.astro";
           <div data-reveal style={`--d: ${i * 120}ms`}>
             {/* El icono va dentro de un cuadro, para que las 3 columnas
                 arranquen con el mismo peso visual aunque el dibujo cambie. */}
-            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-ink-900 text-white">
+            <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-acento">
               <Icono nombre={item.icono} clase="h-5.5 w-5.5" />
             </span>
 
@@ -45,7 +45,7 @@ import Icono from "./Icono.astro";
         {
           capacidades.map((item) => (
             <li class="flex items-center gap-3">
-              <Icono nombre={item.icono} clase="h-5 w-5 shrink-0 text-ink-500" />
+              <Icono nombre={item.icono} clase="h-5 w-5 shrink-0 text-acento" />
               <span class="font-medium">{item.titulo}</span>
             </li>
           ))

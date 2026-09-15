@@ -12,8 +12,22 @@ import Proposito from "../components/Proposito.astro";
 import Producto from "../components/Producto.astro";
 import Agenda from "../components/Agenda.astro";
 import Footer from "../components/Footer.astro";
+import Proximamente from "../components/Proximamente.astro";
+
+/* Modo "Próximamente": se decide AL CONSTRUIR con una variable de entorno,
+   no con código distinto por rama.
+   · Producción: PUBLIC_PROXIMAMENTE=true en el hosting → pantalla de espera.
+   · Desarrollo / local: sin la variable → landing completa.
+   Para lanzar, quita la variable (o ponla en false) y vuelve a desplegar. */
+const proximamente = import.meta.env.PUBLIC_PROXIMAMENTE === "true";
 ---
 
+{
+  proximamente ? (
+    <Layout titulo="Próximamente">
+      <Proximamente />
+    </Layout>
+  ) : (
 <Layout>
   <Nav />
   <main id="contenido">
@@ -28,3 +42,5 @@ import Footer from "../components/Footer.astro";
   </main>
   <Footer />
 </Layout>
+  )
+}

@@ -2,7 +2,7 @@
 import { proceso } from "../config";
 ---
 
-<section id="proceso" class="flex min-h-svh items-center bg-ink-50 py-20 sm:py-24">
+<section id="proceso" class="gradiente-claro flex min-h-svh items-center bg-ink-50 py-20 sm:py-24">
   <div class="mx-auto w-full max-w-6xl px-6">
     <div class="max-w-2xl" data-reveal>
       <p class="text-sm font-medium uppercase tracking-widest text-ink-500">Cómo trabajamos</p>
@@ -23,7 +23,7 @@ import { proceso } from "../config";
       {
         proceso.map((paso, i) => (
           <li class="relative flex gap-6 pb-10 last:pb-0" data-reveal style={`--d: ${i * 90}ms`}>
-            <span class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink-900 text-sm font-semibold tabular-nums text-white">
+            <span class="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accion text-sm font-semibold tabular-nums text-white">
               {i + 1}
             </span>
             <div class="pt-0.5">

@@ -1,0 +1,95 @@
+---
+import { Image } from "astro:assets";
+import { site } from "../config";
+import Robot from "./Robot.astro";
+import logo from "../assets/brand/solotu-logo-recortado.png";
+import logoBlanco from "../assets/brand/solotu-logo-blanco.png";
+---
+
+{/*
+  Pantalla "Próximamente". Se muestra en lugar de la landing cuando el sitio
+  se construye con PUBLIC_PROXIMAMENTE=true (ver src/pages/index.astro).
+
+  · Una sola pantalla, sin navegación: marca, robot, mensaje y una forma de
+    contacto para no perder a quien llegue antes del lanzamiento.
+  · Reutiliza el robot y el gradiente vivo de la landing.
+  · Respeta el modo oscuro del sistema (lo aplica el script de Layout).
+*/}
+<main
+  id="contenido"
+  class="gradiente-claro flex min-h-svh flex-col items-center justify-center bg-ink-50 px-6 py-16 text-center"
+>
+  {/* Logo en dos versiones según el tema */}
+  <span class="proximamente-logo relative block h-8 w-[135px]">
+    <Image src={logo} alt={site.nombre} height={32} densities={[1, 2, 3]} class="logo-claro absolute inset-0 h-8 w-auto" loading="eager" />
+    <Image src={logoBlanco} alt="" height={32} densities={[1, 2, 3]} class="logo-oscuro absolute inset-0 h-8 w-auto" loading="eager" />
+  </span>
+
+  <Robot
+    clase="mt-16 w-40 sm:w-48"
+    saludos={["¡Hola!", "Estamos construyendo algo", "Muy pronto, ¡prometido!"]}
+  />
+
+  <p class="mt-10 inline-flex items-center gap-2 rounded-full bg-brand-50 px-3.5 py-1.5 text-sm font-semibold uppercase tracking-widest text-acento">
+    <span class="proximamente-punto relative flex h-2 w-2" aria-hidden="true">
+      <span class="absolute inset-0 rounded-full bg-acento"></span>
+    </span>
+    Próximamente
+  </p>
+
+  <h1 class="mt-5 max-w-2xl text-4xl leading-[1.1] font-semibold tracking-[-0.03em] text-balance sm:text-5xl">
+    IA que resuelve la operación de tu empresa
+  </h1>
+  <p class="mt-5 max-w-lg text-lg leading-relaxed text-ink-500">
+    Estamos terminando nuestro sitio. Mientras tanto, escríbenos y platicamos de lo que necesitas.
+  </p>
+
+  <a
+    href={`mailto:${site.email}`}
+    class="mt-8 inline-flex items-center gap-2 rounded-full bg-accion px-7 py-3.5 font-medium text-white shadow-lg shadow-accion/25 transition-all duration-200 hover:bg-accion-hover hover:shadow-xl hover:shadow-accion/30"
+  >
+    Escríbenos
+    <span aria-hidden="true">&rarr;</span>
+  </a>
+  <p class="mt-3 text-sm text-ink-500">{site.email}</p>
+
+  <p class="mt-16 text-sm text-ink-500">{site.zonas}</p>
+</main>
+
+<style>
+  /* Logo: versión negra en claro, blanca en oscuro */
+  .logo-oscuro {
+    opacity: 0;
+  }
+  :global(:root[data-theme="dark"]) .logo-claro {
+    opacity: 0;
+  }
+  :global(:root[data-theme="dark"]) .logo-oscuro {
+    opacity: 1;
+  }
+
+  /* Punto "en vivo" junto a Próximamente: un halo que se expande */
+  .proximamente-punto::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: var(--color-acento);
+    animation: punto-vivo 1.8s var(--ease-out-soft) infinite;
+  }
+  @keyframes punto-vivo {
+    from {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(3);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .proximamente-punto::after {
+      animation: none;
+    }
+  }
+</style>
